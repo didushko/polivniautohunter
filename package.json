@@ -1,0 +1,29 @@
+{
+  "name": "polovniautohunter",
+  "version": "1.0.0",
+  "description": "Hunting new car in https://www.polovniautomobili.com/",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node ./dist/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "DenisD",
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/dotenv": "^8.2.3",
+    "@types/node": "^22.10.2",
+    "eslint": "^9.17.0",
+    "globals": "^15.13.0",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "sqlite3": "^5.1.7",
+    "telegraf": "^4.16.3"
+  }
+}
