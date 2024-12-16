@@ -3,6 +3,15 @@ import * as cheerio from "cheerio";
 import { getTrackingListBatch, updateTrackingDates } from "./database";
 import { ConfigService } from "../config/config.service";
 import { Telegraf } from "telegraf";
+import { getDateNow } from "../utils";
+
+export interface AutoCard {
+  id: string;
+  titles: string;
+  img: string;
+  link: string;
+  date: number;
+}
 
 function getDatesFromPage(rawHtml: string) {
   const res = {
@@ -33,22 +42,8 @@ function getNewFromPage(
   last_date: number
 ) {
   const res: {
-    add: {
-      id: string;
-      price: string;
-      title: string;
-      img: string;
-      link: string;
-      date: number;
-    }[];
-    ord: {
-      id: string;
-      price: string;
-      title: string;
-      img: string;
-      link: string;
-      date: number;
-    }[];
+    add: AutoCard[];
+    ord: AutoCard[];
     findedOrd: boolean;
   } = {
     add: [],
@@ -71,7 +66,21 @@ function getNewFromPage(
       const link = article.find("a").attr("href") || "";
       const renewDateStr = html(this).attr("data-renewdate");
       const date = renewDateStr ? Date.parse(renewDateStr) : 0;
-      if (id) res.add.push({ id: id, price, title, img, link, date });
+
+      const titles = [title, price];
+
+      article.find(".setInfo").each((index, setInfo) => {
+        html(setInfo)
+          .find("div[title]")
+          .each((index, div) => {
+            const titleFromDiv = html(div).attr("title");
+            if (titleFromDiv) {
+              titles.push(titleFromDiv);
+            }
+          });
+      });
+      if (id)
+        res.add.push({ id: id, titles: titles.join("\n"), img, link, date });
     });
 
   const ArticlesOrdinary = html(
@@ -90,7 +99,21 @@ function getNewFromPage(
     const link = article.find("a").attr("href") || "";
     const renewDateStr = html(this).attr("data-renewdate");
     const date = renewDateStr ? Date.parse(renewDateStr) : 0;
-    if (id) res.ord.push({ id: id, price, title, img, link, date });
+    const titles = [title, price];
+
+    article.find(".setInfo").each((index, setInfo) => {
+      // Для кожного <div class="setInfo"> перевіряємо наявність дочірніх div з атрибутом title
+      html(setInfo)
+        .find("div[title]")
+        .each((index, div) => {
+          const titleFromDiv = html(div).attr("title");
+          if (titleFromDiv) {
+            titles.push(titleFromDiv); // Додаємо знайдені title до масиву
+          }
+        });
+    });
+    if (id)
+      res.ord.push({ id: id, titles: titles.join("\n"), img, link, date });
   });
   res.findedOrd = ArticlesOrdinary.length > 0;
   return res;
@@ -121,7 +144,15 @@ export async function getDatesByUrl(url: string) {
           dates.ord = finedDates.ord;
           break;
         }
-        page++;
+        if (
+          res.data
+            .toString()
+            .includes('<a title="Sledeća stranica" class="js-pagination-next"')
+        ) {
+          page++;
+        } else {
+          break;
+        }
       } else {
         break;
       }
@@ -156,11 +187,22 @@ export async function getNew(
         const newData = getNewFromPage(res.data, last_date_with_add, last_date);
         newWithAdd.push(...newData.add);
         newOrdinary.push(...newData.ord);
-        page++;
         findedOrdinary = newData.findedOrd && newData.ord.length === 0;
+        if (
+          res.data
+            .toString()
+            .includes('<a title="Sledeća stranica" class="js-pagination-next"')
+        ) {
+          page++;
+        } else {
+          break;
+        }
       } else {
         break;
       }
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1000);
+      });
     } while (!findedOrdinary);
     return { newWithAdd, newOrdinary };
   } catch (e) {
@@ -185,6 +227,11 @@ export async function sendUpdates(configService: ConfigService, bot: Telegraf) {
     if (!newItems) {
       return;
     }
+    console.log(
+      `${getDateNow()}---send ${
+        newItems.newWithAdd.length + newItems.newOrdinary.length
+      } to user ${tracking.user_id} with hunting name ${tracking.name}`
+    );
 
     await updateTrackingDates(
       tracking.user_id,
@@ -204,8 +251,7 @@ export async function sendUpdates(configService: ConfigService, bot: Telegraf) {
         tracking.user_id,
         tracking.name,
         item.id,
-        item.price,
-        item.title,
+        item.titles,
         item.img,
         item.link,
         "Ordinary"
@@ -217,8 +263,7 @@ export async function sendUpdates(configService: ConfigService, bot: Telegraf) {
         tracking.user_id,
         tracking.name,
         item.id,
-        item.price,
-        item.title,
+        item.titles,
         item.img,
         item.link,
         "Add"
@@ -272,13 +317,12 @@ async function sendMessageWithNewItem(
   user_id: string,
   name: string,
   id: string,
-  price: string,
-  title: string,
+  titles: string,
   img: string,
   link: string,
   type: string
 ) {
-  const messageText = `Here new car in your ${name} search.\n ${title} \n Id: ${id}\n Type: ${type}\n Price: ${price}`;
+  const messageText = `Here new car in your ${name} search.\n\nType: ${type}\n${titles}\n`;
 
   const buttonText = "Go to website";
   const buttonUrl = "https://www.polovniautomobili.com" + link;

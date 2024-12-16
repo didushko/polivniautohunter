@@ -8,6 +8,7 @@ const createTables = (): boolean => {
       `CREATE TABLE IF NOT EXISTS tracking (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
+        user_name TEXT,
         url TEXT,
         name TEXT,
         last_date_with_add INTEGER,
@@ -56,6 +57,7 @@ export const updateTrackingDates = (
 
 const addTracking = (
   userId: number,
+  userName: string,
   url: string,
   name: string,
   lastDateWithAdd: number,
@@ -63,8 +65,8 @@ const addTracking = (
 ): boolean => {
   try {
     db.run(
-      `INSERT INTO tracking (user_id, url, name, last_date_with_add, last_date) VALUES (?, ?, ?, ?, ?)`,
-      [userId, url, name, lastDateWithAdd, lastDate],
+      `INSERT INTO tracking (user_id,user_name, url, name, last_date_with_add, last_date) VALUES (?,?, ?, ?, ?, ?)`,
+      [userId, userName, url, name, lastDateWithAdd, lastDate],
       function (err) {
         if (err) {
           console.error("Error inserting tracking data:", err);

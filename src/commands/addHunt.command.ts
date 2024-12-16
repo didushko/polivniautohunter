@@ -40,6 +40,7 @@ export class AddHuntCommand extends Command {
 
         const saved = addTracking(
           ctx.from.id,
+          ctx.from.username || "",
           url,
           ctx.session.add.name,
           Date.parse(dates.add) || 0,
