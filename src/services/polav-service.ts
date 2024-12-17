@@ -13,6 +13,7 @@ export interface AutoCard {
   img: string;
   link: string;
   date: number;
+  tags: string[];
 }
 
 function getDatesFromPage(rawHtml: string) {
@@ -68,9 +69,19 @@ function getNewFromPage(
       const date = renewDateStr ? Date.parse(renewDateStr) : 0;
 
       const titles = getTitlles(html, article);
+      const tags = html(".badge span")
+        .map((index, element) => html(element).text())
+        .get();
 
       if (id)
-        res.add.push({ id: id, titles: titles.join("\n"), img, link, date });
+        res.add.push({
+          id: id,
+          titles: titles.join("\n"),
+          img,
+          link,
+          date,
+          tags,
+        });
     });
 
   const ordinary = html("article.classified:not(.usedCarFeatured)");
@@ -88,8 +99,18 @@ function getNewFromPage(
     const date = renewDateStr ? Date.parse(renewDateStr) : 0;
 
     const titles = getTitlles(html, article);
+    const tags = html(".badge span")
+      .map((index, element) => html(element).text())
+      .get();
     if (id)
-      res.ord.push({ id: id, titles: titles.join("\n"), img, link, date });
+      res.ord.push({
+        id: id,
+        titles: titles.join("\n"),
+        img,
+        link,
+        date,
+        tags,
+      });
   });
   res.findedOrd = ordinary.length > 0;
   return res;
@@ -235,7 +256,7 @@ export const processAllTrackings = async (bot: Telegraf) => {
         bot,
         tracking.user_id,
         tracking.name,
-        item.id,
+        item.tags,
         item.titles,
         item.img,
         item.link,
@@ -247,7 +268,7 @@ export const processAllTrackings = async (bot: Telegraf) => {
         bot,
         tracking.user_id,
         tracking.name,
-        item.id,
+        item.tags,
         item.titles,
         item.img,
         item.link,
@@ -282,13 +303,15 @@ async function sendMessageWithNewItem(
   bot: Telegraf,
   user_id: string,
   name: string,
-  id: string,
+  tags: string[],
   titles: string,
   img: string,
   link: string,
   type: string
 ) {
-  const messageText = `🎯 Here’s a new car in your <b>${name}</b> hunt 🎯\nType: ${type}\n\n${titles}\n`;
+  const messageText = `🎯 Here’s a new car in your <b>${name}</b> hunt 🎯\nType: ${type}\n\n${titles}\n\n${tags
+    .map((el) => "#" + el.replace(/\s+/g, "_"))
+    .join(" ")}`;
 
   const buttonText = "View on the website";
   const buttonUrl = "https://www.polovniautomobili.com" + link;
@@ -305,12 +328,12 @@ async function sendMessageWithNewItem(
 export async function sendTestMessage(bot: Telegraf) {
   console.log("Send test message");
   const newItem = getNewFromPage(exampleHhtml, 0, 0);
-  const { titles, img, link } = newItem.ord[0]!;
+  const { titles, img, link, tags } = newItem.ord[0]!;
   const type = "🌟 No Ad";
   const name = "TEST";
   const user_id = process.env.ADMIN_ID;
   console.log("user_id", user_id);
   if (user_id) {
-    sendMessageWithNewItem(bot, user_id, name, "", titles, img, link, type);
+    sendMessageWithNewItem(bot, user_id, name, tags, titles, img, link, type);
   }
 }
