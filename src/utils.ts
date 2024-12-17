@@ -66,15 +66,22 @@ export function getTitlles(
         }
       });
   });
-  titles.push(article.find(".city").first().html() || "No lication");
+  const city = article.find(".city").first().text();
+  const cityLink = city
+    ? `<a href="https://www.google.com/maps/place/${encodeURIComponent(
+        city
+      )}" name="${city}">${city}</a>`
+    : "Unknown lication";
+  titles.push(cityLink);
+
   if (titles.length === 9) {
-    titles[2] = "🗓️ - " + replaceAutoType(titles[2]);
-    titles[3] = "⛽ - " + titles[3].replace(" | ", "\n⚙️ - ");
-    titles[4] = "🎰 - " + titles[4] + "🛞";
-    titles[5] = "⚡ - " + titles[5];
-    titles[6] = "🕹️ - " + titles[6];
-    titles[7] = "🚪 - " + titles[7].replace(",", ", 💺 - ");
-    titles[8] = "📍 - " + titles[8];
+    titles[2] = "🗓️ — " + replaceAutoType(titles[2]);
+    titles[3] = "⛽ — " + titles[3].replace(" | ", "\n⚙️ - ");
+    titles[4] = "🎰 — " + titles[4] + "🛞";
+    titles[5] = "⚡ — " + titles[5];
+    titles[6] = "🕹️ — " + titles[6];
+    titles[7] = "🚪 — " + titles[7].replace(",", ", 💺 - ");
+    titles[8] = "📍 — " + titles[8];
   }
   return titles;
 }
