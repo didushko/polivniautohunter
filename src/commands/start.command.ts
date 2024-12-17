@@ -11,7 +11,7 @@ export class StartCommand extends Command {
   handle(): void {
     this.bot.help((ctx) => {
       ctx.reply(
-        "I can help you with your car hunt! Just add new hunt, send me link to your polovniautomobili search, and i will send you message if something new appears. \nJust type /start"
+        "I can help you with your car hunt! Just a add new hunt, send me the link to your PolovniAutomobili search, and i will notify if something new appears. \nJust type /start"
       );
     });
 
