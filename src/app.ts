@@ -13,6 +13,7 @@ import {
   sendUpdates,
 } from "./services/polav-service";
 import * as http from "http";
+import { selfReq } from "./utils";
 
 declare module "telegraf" {
   interface Context {
@@ -75,3 +76,5 @@ const port = process.env.PORT || 3333;
 server.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
+
+if (process.env.CHEAP) selfReq();
