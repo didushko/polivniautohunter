@@ -1,5 +1,5 @@
 import DatabaseConnection from "../database/DatabaseConnetion";
-import TrackingModel from "../database/Tracking.model";
+import TrackingModel, { ITracking } from "../database/Tracking.model";
 
 class TrackingService extends DatabaseConnection {
   addTracking = async (
@@ -45,13 +45,13 @@ class TrackingService extends DatabaseConnection {
     }
   };
 
-  getListOfTracking = async (userId: number): Promise<string[]> => {
+  getListOfTracking = async (userId: number): Promise<ITracking[]> => {
     try {
       const trackings = await TrackingModel.find(
         { user_id: userId },
-        { name: 1, _id: 0 }
+        { name: 1, url: 1, _id: 0 }
       );
-      return trackings.map((t) => t.name);
+      return trackings;
     } catch (err) {
       console.error("Error retrieving tracking list:", err);
       return [];

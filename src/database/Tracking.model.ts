@@ -1,6 +1,6 @@
 import { model, Schema } from "mongoose";
 
-interface ITracking extends Document {
+export interface ITracking extends Document {
   user_id: number;
   user_name: string;
   url: string;

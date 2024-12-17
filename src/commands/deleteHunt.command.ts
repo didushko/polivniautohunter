@@ -21,7 +21,7 @@ export class DeleteHuntCommand extends Command {
       ctx.reply(
         "Choose what you want to delete:\n",
         Markup.inlineKeyboard(
-          list.map((v) => Markup.button.callback(v, `delete_hunt_${v}`))
+          list.map((v) => Markup.button.callback(v.name, `delete_hunt_${v.name}`))
         )
       );
     });
