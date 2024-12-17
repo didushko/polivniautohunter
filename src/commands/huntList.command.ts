@@ -1,6 +1,7 @@
 import { Telegraf } from "telegraf";
 import { Command } from "./command.class";
-import { getListOfTracking } from "../services/database";
+import trackingService from "../services/tracking-service";
+// import { getListOfTracking } from "../services/database";
 
 export class HuntListCommand extends Command {
   constructor(bot: Telegraf) {
@@ -8,7 +9,7 @@ export class HuntListCommand extends Command {
   }
   handle(): void {
     this.bot.command("list", async (ctx) => {
-      const list = await getListOfTracking(ctx.from.id);
+      const list = await trackingService.getListOfTracking(ctx.from.id);
       if (list && list.length > 0)
         ctx.reply(`There what we tracking now:  \n${list.join("\n")}`);
       else {

@@ -1,7 +1,8 @@
 import { Telegraf } from "telegraf";
 import { Command } from "./command.class";
 import { clearSession } from "../utils";
-import { deleteTrackingById } from "../services/database";
+import trackingService from "../services/tracking-service";
+// import { deleteTrackingById } from "../services/database";
 
 export class StartCommand extends Command {
   constructor(bot: Telegraf) {
@@ -37,9 +38,8 @@ export class StartCommand extends Command {
         console.log(
           `Bot was removed by user: ${ctx.update.my_chat_member.chat.id}`
         );
-        deleteTrackingById(ctx.from.id);
+        trackingService.deleteTrackingById(ctx.from.id);
       }
-
     });
   }
 }

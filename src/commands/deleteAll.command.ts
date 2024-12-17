@@ -1,6 +1,7 @@
 import { Telegraf } from "telegraf";
 import { Command } from "./command.class";
-import { deleteTrackingById } from "../services/database";
+import trackingService from "../services/tracking-service";
+// import { deleteTrackingById } from "../services/database";
 
 export class DeleteAllCommand extends Command {
   constructor(bot: Telegraf) {
@@ -8,7 +9,7 @@ export class DeleteAllCommand extends Command {
   }
   handle(): void {
     this.bot.command("delete_all", async (ctx) => {
-      const res = await deleteTrackingById(ctx.from.id);
+      const res = await trackingService.deleteTrackingById(ctx.from.id);
       if (res) {
         ctx.reply("Your tracking list is empty");
       } else {

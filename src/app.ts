@@ -7,7 +7,6 @@ import { HuntListCommand } from "./commands/huntList.command";
 import { AddHuntCommand } from "./commands/addHunt.command";
 import { DeleteHuntCommand } from "./commands/deleteHunt.command";
 import { DeleteAllCommand } from "./commands/deleteAll.command";
-import { createTables } from "./services/database";
 import { sendUpdates } from "./services/polav-service";
 
 declare module "telegraf" {
@@ -31,7 +30,6 @@ class Bot {
     this.bot = new Telegraf(this.configService.get("TOKEN"));
   }
   init() {
-    createTables();
     this.bot.use(session({ defaultSession: () => ({ add: {}, delete: {} }) }));
     this.commands = [
       new StartCommand(this.bot),

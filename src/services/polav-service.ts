@@ -1,9 +1,10 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { getTrackingListBatch, updateTrackingDates } from "./database";
+// import { getTrackingListBatch, updateTrackingDates } from "./database";
 import { ConfigService } from "../config/config.service";
 import { Telegraf } from "telegraf";
 import { getDateNow } from "../utils";
+import trackingService from "./tracking-service";
 
 export interface AutoCard {
   id: string;
@@ -233,7 +234,7 @@ export async function sendUpdates(configService: ConfigService, bot: Telegraf) {
       } to user ${tracking.user_id} with hunting name ${tracking.name}`
     );
 
-    await updateTrackingDates(
+    await trackingService.updateTrackingDates(
       tracking.user_id,
       tracking.name,
       Math.max(
@@ -279,33 +280,29 @@ export async function sendUpdates(configService: ConfigService, bot: Telegraf) {
     let offset = 0;
 
     while (true) {
-      const rows = await new Promise<
-        {
-          user_id: string;
-          url: string;
-          name: string;
-          last_date_with_add: number;
-          last_date: number;
-        }[]
-      >((resolve, reject) => {
-        getTrackingListBatch(offset, limit, (error, rows) => {
-          if (error) {
-            reject("Error fetching tracking list: " + error);
-          } else {
-            resolve(rows);
-          }
-        });
-      });
+      // Використовуємо вашу функцію getTrackingListBatch
+      const rows = await trackingService.getTrackingListBatch(offset, limit);
 
       if (rows.length === 0) {
         break;
       }
+
+      // Обробка кожного трекінгу
       for (const tracking of rows) {
-        await processTracking(tracking);
+        await processTracking({
+          user_id: tracking.user_id.toString(),
+          url: tracking.url,
+          name: tracking.name,
+          last_date_with_add: tracking.last_date_with_add,
+          last_date: tracking.last_date,
+        });
       }
+
+      // Зсуваємо offset для наступного батчу
       offset += limit;
     }
   };
+
   setInterval(
     processAllTrackings,
     Number.parseInt(configService.get("INTERVAL")) * 60 * 1000

@@ -2,7 +2,8 @@ import { Telegraf } from "telegraf";
 import { Command } from "./command.class";
 import { getDatesByUrl } from "../services/polav-service";
 import { clearSession } from "../utils";
-import { addTracking } from "../services/database";
+import trackingService from "../services/tracking-service";
+// import { addTracking } from "../services/database";
 
 export class AddHuntCommand extends Command {
   constructor(bot: Telegraf) {
@@ -38,7 +39,7 @@ export class AddHuntCommand extends Command {
           return;
         }
 
-        const saved = addTracking(
+        const saved = await trackingService.addTracking(
           ctx.from.id,
           ctx.from.username || "",
           url,
