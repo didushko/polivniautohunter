@@ -2,16 +2,18 @@ import { config, DotenvParseOutput } from "dotenv";
 import { IConfigService } from "./config.interface";
 
 export class ConfigService implements IConfigService {
-  private config: DotenvParseOutput;
+  private config: DotenvParseOutput | NodeJS.ProcessEnv;
   constructor() {
     const { error, parsed } = config();
     if (error) {
-      throw new Error("No .env file found");
+      this.config = process.env;
+      console.log("No .env file found");
     }
     if (!parsed) {
-      throw new Error("Empty .env");
+      this.config = process.env;
+      console.log("Empty .env");
     }
-    this.config = parsed;
+    this.config = process.env;
   }
   get(key: string): string {
     const res = this.config[key];
