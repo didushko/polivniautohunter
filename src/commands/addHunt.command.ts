@@ -11,9 +11,10 @@ export class AddHuntCommand extends Command {
   }
   handle(): void {
     this.bot.command("add", async (ctx) => {
+      clearSession(ctx);
       ctx.session.add.currentStep = "name";
       ctx.reply(
-        "Ok, let's add new hunt! Send me name of this hunt, or /cancel"
+        "Let's add a new hunt! Send me the name of the hunt, or type /cancel to stop."
       );
     });
 
@@ -24,18 +25,20 @@ export class AddHuntCommand extends Command {
 
         ctx.session.add.currentStep = "url";
 
-        ctx.reply("Got it! Now, please provide your search url, or /cancel");
+        ctx.reply(
+          "Got it! Now, please provide the search URL, or type /cancel to stop."
+        );
       } else if (ctx.session.add.currentStep === "url") {
         if (!ctx.session.add.name) {
           clearSession(ctx);
-          ctx.reply("Uups, catch some error, please try later");
+          ctx.reply("Oops, something went wrong. Please try again later.");
           return;
         }
         const url = ctx.message.text;
         const dates = await getDatesByUrl(url);
         if (!dates) {
           clearSession(ctx);
-          ctx.reply("Url is not valid, please try again");
+          ctx.reply("The URL is not valid. Please try again.");
           return;
         }
 
@@ -48,10 +51,12 @@ export class AddHuntCommand extends Command {
           Date.parse(dates.ord) || 0
         );
         if (!saved) {
-          ctx.reply("Uups, catch some error, please try later");
+          ctx.reply("Oops, something went wrong. Please try again later.");
           return;
         }
-        ctx.reply(`New hunt "${ctx.session.add.name}" was added successfully.`);
+        ctx.reply(
+          `The new hunt "${ctx.session.add.name}" has been added successfully.`
+        );
         clearSession(ctx);
       } else {
         next();

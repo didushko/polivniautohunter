@@ -1,6 +1,7 @@
 import { Telegraf } from "telegraf";
 import { Command } from "./command.class";
 import trackingService from "../services/tracking-service";
+import { clearSession } from "../utils";
 // import { getListOfTracking } from "../services/database";
 
 export class HuntListCommand extends Command {
@@ -9,11 +10,12 @@ export class HuntListCommand extends Command {
   }
   handle(): void {
     this.bot.command("list", async (ctx) => {
+      clearSession(ctx);
       const list = await trackingService.getListOfTracking(ctx.from.id);
       if (list && list.length > 0)
-        ctx.reply(`There what we tracking now:  \n${list.join("\n")}`);
+        ctx.reply(`Here’s what we’re hunting now:  \n${list.join("\n")}`);
       else {
-        ctx.reply("You are not tracking anything");
+        ctx.reply("You’re not hunting anything.");
       }
     });
   }

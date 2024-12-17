@@ -1,6 +1,7 @@
 import { Markup, Telegraf } from "telegraf";
 import { Command } from "./command.class";
 import trackingService from "../services/tracking-service";
+import { clearSession } from "../utils";
 // import { deleteTrackingByName, getListOfTracking } from "../services/database";
 
 export class DeleteHuntCommand extends Command {
@@ -10,10 +11,11 @@ export class DeleteHuntCommand extends Command {
 
   handle(): void {
     this.bot.command("delete", async (ctx) => {
+      clearSession(ctx);
       const list = await trackingService.getListOfTracking(ctx.from.id);
 
       if (list.length === 0) {
-        return ctx.reply("You have no tracking data to delete.");
+        return ctx.reply("You have no hunts to delete.");
       }
 
       ctx.reply(
@@ -27,12 +29,15 @@ export class DeleteHuntCommand extends Command {
     this.bot.action(/^delete_hunt_(.+)$/, async (ctx) => {
       const nameToDelete = ctx.match[1];
 
-      const result = await trackingService.deleteTrackingByName(ctx.from.id, nameToDelete);
+      const result = await trackingService.deleteTrackingByName(
+        ctx.from.id,
+        nameToDelete
+      );
 
       if (result) {
-        ctx.reply(`Successfully deleted the tracking for: ${nameToDelete}`);
+        ctx.reply(`Successfully deleted the hunt named ${nameToDelete}`);
       } else {
-        ctx.reply(`Failed to delete the tracking for: ${nameToDelete}`);
+        ctx.reply(`Failed to delete the hunt named ${nameToDelete}`);
       }
     });
   }

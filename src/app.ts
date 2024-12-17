@@ -59,7 +59,7 @@ sendUpdates(configService, bot.bot);
 const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && req.url === "/send/all") {
     console.log("Receive send all comand");
-    await processAllTrackings(configService, bot.bot);
+    await processAllTrackings(bot.bot);
     res.writeHead(200, { "Content-Type": "text/plain" });
     res.end("All messages sended");
   } else if (req.method === "GET" && req.url === "/send/test") {

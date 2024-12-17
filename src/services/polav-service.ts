@@ -105,13 +105,12 @@ function getNewFromPage(
     const titles = [`<b>${title}</b>`, " 💶 - " + price];
 
     article.find(".setInfo").each((index, setInfo) => {
-      // Для кожного <div class="setInfo"> перевіряємо наявність дочірніх div з атрибутом title
       html(setInfo)
         .find("div[title]")
         .each((index, div) => {
           const titleFromDiv = html(div).attr("title");
           if (titleFromDiv) {
-            titles.push(titleFromDiv); // Додаємо знайдені title до масиву
+            titles.push(titleFromDiv);
           }
         });
     });
@@ -216,15 +215,12 @@ export async function getNew(
 
 export async function sendUpdates(configService: ConfigService, bot: Telegraf) {
   setInterval(
-    () => processAllTrackings(configService, bot),
+    () => processAllTrackings(bot),
     Number.parseInt(configService.get("INTERVAL")) * 60 * 1000
   );
 }
 
-export const processAllTrackings = async (
-  configService: ConfigService,
-  bot: Telegraf
-) => {
+export const processAllTrackings = async (bot: Telegraf) => {
   const limit = 100;
   let offset = 0;
   const processTracking = async (tracking: {
@@ -318,9 +314,9 @@ async function sendMessageWithNewItem(
   link: string,
   type: string
 ) {
-  const messageText = `Here new car in your ${name} search.\nType: ${type}\n\n${titles}\n`;
+  const messageText = `Here’s a new car in your <b>${name}</b> hunt'.\nType: ${type}\n\n${titles}\n`;
 
-  const buttonText = "Go to website";
+  const buttonText = "View on the website";
   const buttonUrl = "https://www.polovniautomobili.com" + link;
 
   await bot.telegram.sendPhoto(user_id, img, {

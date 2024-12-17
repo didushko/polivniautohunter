@@ -17,12 +17,13 @@ export class StartCommand extends Command {
 
     this.bot.start((ctx) =>
       ctx.reply(
-        "Hi! There what i can do:  \n\
-        \n \t/list - Show hunt list\
-        \n \t/add - Add new hunt\
-        \n \t/delete - Delete hunt\
-        \n \t/delete_all - Delete all hunts\
-        \n \t/help - Help"
+        `Hi there! Here’s what I can do:
+
+  • /list – Show the hunt list
+  • /add – Add a new hunt
+  • /delete – Delete a hunt
+  • /delete_all – Delete all hunts
+  • /help – Show help`
       )
     );
 
