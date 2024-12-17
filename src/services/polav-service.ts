@@ -239,7 +239,7 @@ export const processAllTrackings = async (bot: Telegraf) => {
         item.titles,
         item.img,
         item.link,
-        "Ordinary"
+        "🌟 No Ad"
       )
     );
     newItems?.newWithAdd.forEach(async (item) => {
@@ -251,7 +251,7 @@ export const processAllTrackings = async (bot: Telegraf) => {
         item.titles,
         item.img,
         item.link,
-        "Add"
+        "📢 With Ad"
       );
     });
   };
@@ -288,7 +288,7 @@ async function sendMessageWithNewItem(
   link: string,
   type: string
 ) {
-  const messageText = `Here’s a new car in your <b>${name}</b> hunt'.\nType: ${type}\n\n${titles}\n`;
+  const messageText = `🎯 Here’s a new car in your <b>${name}</b> hunt 🎯\nType: ${type}\n\n${titles}\n`;
 
   const buttonText = "View on the website";
   const buttonUrl = "https://www.polovniautomobili.com" + link;
@@ -306,7 +306,7 @@ export async function sendTestMessage(bot: Telegraf) {
   console.log("Send test message");
   const newItem = getNewFromPage(exampleHhtml, 0, 0);
   const { titles, img, link } = newItem.ord[0]!;
-  const type = "ordinary";
+  const type = "🌟 No Ad";
   const name = "TEST";
   const user_id = process.env.ADMIN_ID;
   console.log("user_id", user_id);

@@ -54,7 +54,7 @@ export function getTitlles(
 ) {
   const price = article.attr("data-price") || "";
   const title = article.find("img").attr("title") || "";
-  const titles = [`<b>${title}</b>`, " 💰 - " + price];
+  const titles = [`🏷️ <b>${title}</b>\n`, " 💰 - " + price];
 
   article.find(".setInfo").each((index, setInfo) => {
     html(setInfo)
@@ -66,9 +66,7 @@ export function getTitlles(
         }
       });
   });
-  titles.push(
-    article.find(".uk-icon-map-marker").first().html() || "No lication"
-  );
+  titles.push(article.find(".city").first().html() || "No lication");
   if (titles.length === 9) {
     titles[2] = "🗓️ - " + replaceAutoType(titles[2]);
     titles[3] = "⛽ - " + titles[3].replace(" | ", "\n⚙️ - ");
@@ -97,5 +95,5 @@ function replaceAutoType(text: string) {
   const typeRegex = new RegExp(Object.keys(emojiMap).join("|"), "g");
 
   // Заміна типів на емодзі з відповідними назвами
-  return `\n${text.replace(typeRegex, (match) => emojiMap[match] || match)}`;
+  return `${text.replace(typeRegex, (match) => emojiMap[match] || match)}`;
 }
