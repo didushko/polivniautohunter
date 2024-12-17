@@ -69,10 +69,10 @@ function getNewFromPage(
       const date = renewDateStr ? Date.parse(renewDateStr) : 0;
 
       const titles = getTitlles(html, article);
-      const tags = html(".badge span")
+      const tags = article
+        .find(".badge span")
         .map((index, element) => html(element).text())
         .get();
-
       if (id)
         res.add.push({
           id: id,
@@ -99,7 +99,8 @@ function getNewFromPage(
     const date = renewDateStr ? Date.parse(renewDateStr) : 0;
 
     const titles = getTitlles(html, article);
-    const tags = html(".badge span")
+    const tags = article
+      .find(".badge span")
       .map((index, element) => html(element).text())
       .get();
     if (id)
