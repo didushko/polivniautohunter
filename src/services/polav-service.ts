@@ -3,7 +3,7 @@ import * as cheerio from "cheerio";
 // import { getTrackingListBatch, updateTrackingDates } from "./database";
 import { ConfigService } from "../config/config.service";
 import { Telegraf } from "telegraf";
-import { getDateNow } from "../utils";
+import { getDateNow, getTitlles } from "../utils";
 import trackingService from "./tracking-service";
 import { exampleHhtml } from "../example";
 
@@ -62,25 +62,13 @@ function getNewFromPage(
     .each(function () {
       const article = html(this);
       const id = article.attr("data-classifiedid");
-      const price = article.attr("data-price") || "";
-      const title = article.find("img").attr("title") || "";
       const img = article.find("img").attr("data-src") || "";
       const link = article.find("a").attr("href") || "";
       const renewDateStr = html(this).attr("data-renewdate");
       const date = renewDateStr ? Date.parse(renewDateStr) : 0;
 
-      const titles = [`<b>${title}</b>`, " 💶 - " + price];
+      const titles = getTitlles(html, article);
 
-      article.find(".setInfo").each((index, setInfo) => {
-        html(setInfo)
-          .find("div[title]")
-          .each((index, div) => {
-            const titleFromDiv = html(div).attr("title");
-            if (titleFromDiv) {
-              titles.push(titleFromDiv);
-            }
-          });
-      });
       if (id)
         res.add.push({ id: id, titles: titles.join("\n"), img, link, date });
     });
@@ -94,26 +82,12 @@ function getNewFromPage(
   ArticlesOrdinary.each(function () {
     const article = html(this);
     const id = article.attr("data-classifiedid");
-    const price = article.attr("data-price") || "";
-    const title = article.find("img").attr("title") || "";
     const img = article.find("img").attr("data-src") || "";
     const link = article.find("a").attr("href") || "";
     const renewDateStr = html(this).attr("data-renewdate");
     const date = renewDateStr ? Date.parse(renewDateStr) : 0;
-    // const titles = [title, price];
 
-    const titles = [`<b>${title}</b>`, " 💶 - " + price];
-
-    article.find(".setInfo").each((index, setInfo) => {
-      html(setInfo)
-        .find("div[title]")
-        .each((index, div) => {
-          const titleFromDiv = html(div).attr("title");
-          if (titleFromDiv) {
-            titles.push(titleFromDiv);
-          }
-        });
-    });
+    const titles = getTitlles(html, article);
     if (id)
       res.ord.push({ id: id, titles: titles.join("\n"), img, link, date });
   });
