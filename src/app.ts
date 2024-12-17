@@ -7,7 +7,12 @@ import { HuntListCommand } from "./commands/huntList.command";
 import { AddHuntCommand } from "./commands/addHunt.command";
 import { DeleteHuntCommand } from "./commands/deleteHunt.command";
 import { DeleteAllCommand } from "./commands/deleteAll.command";
-import { sendUpdates } from "./services/polav-service";
+import {
+  processAllTrackings,
+  sendTestMessage,
+  sendUpdates,
+} from "./services/polav-service";
+import * as http from "http";
 
 declare module "telegraf" {
   interface Context {
@@ -49,3 +54,24 @@ const configService = new ConfigService();
 const bot = new Bot(configService);
 bot.init();
 sendUpdates(configService, bot.bot);
+
+const server = http.createServer(async (req, res) => {
+  if (req.method === "GET" && req.url === "/send/all") {
+    console.log("Receive send all comand");
+    await processAllTrackings(configService, bot.bot);
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("All messages sended");
+  } else if (req.method === "GET" && req.url === "/send/test") {
+    await sendTestMessage(bot.bot);
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end(JSON.stringify({ message: "Test sended" }));
+  } else {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("Not Found");
+  }
+});
+
+const port = process.env.PORT || 3333;
+server.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
+});

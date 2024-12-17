@@ -5,6 +5,7 @@ import { ConfigService } from "../config/config.service";
 import { Telegraf } from "telegraf";
 import { getDateNow } from "../utils";
 import trackingService from "./tracking-service";
+import { exampleHhtml } from "../example";
 
 export interface AutoCard {
   id: string;
@@ -68,7 +69,7 @@ function getNewFromPage(
       const renewDateStr = html(this).attr("data-renewdate");
       const date = renewDateStr ? Date.parse(renewDateStr) : 0;
 
-      const titles = [title, price];
+      const titles = [`<b>${title}</b>`, " 💶 - " + price];
 
       article.find(".setInfo").each((index, setInfo) => {
         html(setInfo)
@@ -84,9 +85,8 @@ function getNewFromPage(
         res.add.push({ id: id, titles: titles.join("\n"), img, link, date });
     });
 
-  const ArticlesOrdinary = html(
-    "article.classified:not(.usedCarFeatured)"
-  ).filter(function () {
+  const ordinary = html("article.classified:not(.usedCarFeatured)");
+  const ArticlesOrdinary = ordinary.filter(function () {
     const renewDateStr = html(this).attr("data-renewdate");
     const renewDate = renewDateStr ? Date.parse(renewDateStr) : 0;
     return renewDate > last_date;
@@ -100,7 +100,9 @@ function getNewFromPage(
     const link = article.find("a").attr("href") || "";
     const renewDateStr = html(this).attr("data-renewdate");
     const date = renewDateStr ? Date.parse(renewDateStr) : 0;
-    const titles = [title, price];
+    // const titles = [title, price];
+
+    const titles = [`<b>${title}</b>`, " 💶 - " + price];
 
     article.find(".setInfo").each((index, setInfo) => {
       // Для кожного <div class="setInfo"> перевіряємо наявність дочірніх div з атрибутом title
@@ -116,7 +118,7 @@ function getNewFromPage(
     if (id)
       res.ord.push({ id: id, titles: titles.join("\n"), img, link, date });
   });
-  res.findedOrd = ArticlesOrdinary.length > 0;
+  res.findedOrd = ordinary.length > 0;
   return res;
 }
 
@@ -157,7 +159,7 @@ export async function getDatesByUrl(url: string) {
       } else {
         break;
       }
-    } while (!dates.ord);
+    } while (!dates.ord && page < 20);
     return dates;
   } catch (e) {
     console.log(e);
@@ -188,7 +190,7 @@ export async function getNew(
         const newData = getNewFromPage(res.data, last_date_with_add, last_date);
         newWithAdd.push(...newData.add);
         newOrdinary.push(...newData.ord);
-        findedOrdinary = newData.findedOrd && newData.ord.length === 0;
+        findedOrdinary = newData.ord.length > 0;
         if (
           res.data
             .toString()
@@ -202,9 +204,9 @@ export async function getNew(
         break;
       }
       await new Promise((resolve) => {
-        setTimeout(resolve, 1000);
+        setTimeout(resolve, 100);
       });
-    } while (!findedOrdinary);
+    } while (!findedOrdinary && page < 20);
     return { newWithAdd, newOrdinary };
   } catch (e) {
     console.log(e);
@@ -213,6 +215,18 @@ export async function getNew(
 }
 
 export async function sendUpdates(configService: ConfigService, bot: Telegraf) {
+  setInterval(
+    () => processAllTrackings(configService, bot),
+    Number.parseInt(configService.get("INTERVAL")) * 60 * 1000
+  );
+}
+
+export const processAllTrackings = async (
+  configService: ConfigService,
+  bot: Telegraf
+) => {
+  const limit = 100;
+  let offset = 0;
   const processTracking = async (tracking: {
     user_id: string;
     url: string;
@@ -270,44 +284,29 @@ export async function sendUpdates(configService: ConfigService, bot: Telegraf) {
         "Add"
       );
     });
-    await new Promise((resolve) => {
-      setTimeout(resolve, Number.parseInt(configService.get("SLEEP")) * 1000);
-    });
   };
 
-  const processAllTrackings = async () => {
-    const limit = 100;
-    let offset = 0;
-
-    while (true) {
-      // Використовуємо вашу функцію getTrackingListBatch
-      const rows = await trackingService.getTrackingListBatch(offset, limit);
-
-      if (rows.length === 0) {
-        break;
-      }
-
-      // Обробка кожного трекінгу
-      for (const tracking of rows) {
-        await processTracking({
-          user_id: tracking.user_id.toString(),
-          url: tracking.url,
-          name: tracking.name,
-          last_date_with_add: tracking.last_date_with_add,
-          last_date: tracking.last_date,
-        });
-      }
-
-      // Зсуваємо offset для наступного батчу
-      offset += limit;
+  while (true) {
+    // Використовуємо вашу функцію getTrackingListBatch
+    const rows = await trackingService.getTrackingListBatch(offset, limit);
+    if (rows.length === 0) {
+      break;
     }
-  };
 
-  setInterval(
-    processAllTrackings,
-    Number.parseInt(configService.get("INTERVAL")) * 60 * 1000
-  );
-}
+    // Обробка кожного трекінгу
+    for (const tracking of rows) {
+      await processTracking({
+        user_id: tracking.user_id.toString(),
+        url: tracking.url,
+        name: tracking.name,
+        last_date_with_add: tracking.last_date_with_add,
+        last_date: tracking.last_date,
+      });
+    }
+    // Зсуваємо offset для наступного батчу
+    offset += limit;
+  }
+};
 
 async function sendMessageWithNewItem(
   bot: Telegraf,
@@ -319,7 +318,7 @@ async function sendMessageWithNewItem(
   link: string,
   type: string
 ) {
-  const messageText = `Here new car in your ${name} search.\n\nType: ${type}\n${titles}\n`;
+  const messageText = `Here new car in your ${name} search.\nType: ${type}\n\n${titles}\n`;
 
   const buttonText = "Go to website";
   const buttonUrl = "https://www.polovniautomobili.com" + link;
@@ -331,4 +330,17 @@ async function sendMessageWithNewItem(
       inline_keyboard: [[{ text: buttonText, url: buttonUrl }]],
     },
   });
+}
+
+export async function sendTestMessage(bot: Telegraf) {
+  console.log("Send test message");
+  const newItem = getNewFromPage(exampleHhtml, 0, 0);
+  const { titles, img, link } = newItem.ord[0]!;
+  const type = "ordinary";
+  const name = "TEST";
+  const user_id = process.env.ADMIN_ID;
+  console.log("user_id", user_id);
+  if (user_id) {
+    sendMessageWithNewItem(bot, user_id, name, "", titles, img, link, type);
+  }
 }
