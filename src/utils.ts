@@ -1,11 +1,13 @@
 import axios from "axios";
 import { Context } from "telegraf";
 import * as cheerio from "cheerio";
+import { IUser } from "./database/User.model";
 
 export function clearSession(ctx: Context) {
   if (ctx.session.add.currentStep || ctx.session.delete.currentStep) {
     ctx.session.add.currentStep = undefined;
     ctx.session.delete.currentStep = undefined;
+    ctx.session.support = false;
   }
 }
 
@@ -54,7 +56,7 @@ export function getTitlles(
 ) {
   const price = article.attr("data-price") || "";
   const title = article.find("img").attr("title") || "";
-  const titles = [`🏷️ <b>${title}</b>\n`, " 💰 - " + price];
+  const titles = [`🏷️ <b>${title}</b>\n`, " 💰 — " + price];
 
   article.find(".setInfo").each((index, setInfo) => {
     html(setInfo)
@@ -76,11 +78,11 @@ export function getTitlles(
 
   if (titles.length === 9) {
     titles[2] = "🗓️ — " + replaceAutoType(titles[2]);
-    titles[3] = "⛽ — " + titles[3].replace(" | ", "\n⚙️ - ");
+    titles[3] = "⛽ — " + titles[3].replace(" | ", "\n⚙️ — ");
     titles[4] = "🎰 — " + titles[4] + "🛞";
     titles[5] = "⚡ — " + titles[5];
     titles[6] = "🕹️ — " + titles[6];
-    titles[7] = "🚪 — " + titles[7].replace(",", ", 💺 - ");
+    titles[7] = "🚪 — " + titles[7].replace(",", ", 💺 — ");
     titles[8] = "📍 — " + titles[8];
   }
   return titles;
@@ -99,8 +101,39 @@ function replaceAutoType(text: string) {
   };
 
   // Регулярний вираз для знаходження типів
-  const typeRegex = new RegExp(Object.keys(emojiMap).join("|"), "g");
+  const typeRegex = new RegExp(
+    Object.keys(emojiMap)
+      .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("|"),
+    "g"
+  );
 
   // Заміна типів на емодзі з відповідними назвами
   return `${text.replace(typeRegex, (match) => emojiMap[match] || match)}`;
+}
+
+export function formatUserTable(users: IUser[]): string {
+  const data = [
+    ["ID", "NAME", "First request", "First hunt", "Last hunt", "Total_hunting"],
+  ];
+  users.forEach((user) => {
+    data.push([
+      user.user_id.toString(),
+      user.user_name || "",
+      user.first_request?.toString() || "",
+      user.first_hunt?.toString() || "",
+      user.last_hunt?.toString() || "",
+      user.total_hunting?.toString(),
+    ]);
+  });
+
+  const columnWidths = data[0].map((_, i) =>
+    Math.max(...data.map((row) => row[i].length))
+  );
+
+  return data
+    .map((row) =>
+      row.map((cell, i) => cell.padEnd(columnWidths[i])).join(" | ")
+    )
+    .join("\n");
 }

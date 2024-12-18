@@ -2,7 +2,7 @@ import { session, Telegraf } from "telegraf";
 import { IConfigService } from "./config/config.interface";
 import { ConfigService } from "./config/config.service";
 import { Command } from "./commands/command.class";
-import { StartCommand } from "./commands/start.command";
+import { CommonCommand } from "./commands/ common.command";
 import { HuntListCommand } from "./commands/huntList.command";
 import { AddHuntCommand } from "./commands/addHunt.command";
 import { DeleteHuntCommand } from "./commands/deleteHunt.command";
@@ -14,6 +14,8 @@ import {
 } from "./services/polav-service";
 import * as http from "http";
 import { selfReq } from "./utils";
+import { AdminCommand } from "./commands/admin.command";
+import { ServiceMiddleware } from "./commands/ service.middlware";
 
 declare module "telegraf" {
   interface Context {
@@ -25,6 +27,7 @@ declare module "telegraf" {
       delete: {
         currentStep?: "name" | undefined;
       };
+      support: boolean;
     };
   }
 }
@@ -36,13 +39,19 @@ class Bot {
     this.bot = new Telegraf(this.configService.get("TOKEN"));
   }
   init() {
-    this.bot.use(session({ defaultSession: () => ({ add: {}, delete: {} }) }));
+    this.bot.use(
+      session({
+        defaultSession: () => ({ add: {}, delete: {}, support: false }),
+      })
+    );
     this.commands = [
-      new StartCommand(this.bot),
+      new ServiceMiddleware(this.bot),
+      new CommonCommand(this.bot),
       new HuntListCommand(this.bot),
       new AddHuntCommand(this.bot),
       new DeleteHuntCommand(this.bot),
       new DeleteAllCommand(this.bot),
+      new AdminCommand(this.bot),
     ];
     for (const command of this.commands) {
       command.handle();
@@ -53,8 +62,10 @@ class Bot {
 const configService = new ConfigService();
 
 const bot = new Bot(configService);
+
 bot.init();
-sendUpdates(configService, bot.bot);
+
+if (process.env.TEST) sendUpdates(configService, bot.bot);
 
 const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && req.url === "/send/all") {

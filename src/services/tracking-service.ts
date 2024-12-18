@@ -1,5 +1,6 @@
 import DatabaseConnection from "../database/DatabaseConnetion";
 import TrackingModel, { ITracking } from "../database/Tracking.model";
+import userService from "./user-service";
 
 class TrackingService extends DatabaseConnection {
   addTracking = async (
@@ -20,6 +21,7 @@ class TrackingService extends DatabaseConnection {
         last_date: lastDate,
       });
       await tracking.save();
+      await userService.newHunting(userId);
       return true;
     } catch (err) {
       console.error("Error adding tracking data:", err);
@@ -51,6 +53,18 @@ class TrackingService extends DatabaseConnection {
         { user_id: userId },
         { name: 1, url: 1, _id: 0 }
       );
+      return trackings;
+    } catch (err) {
+      console.error("Error retrieving tracking list:", err);
+      return [];
+    }
+  };
+
+  getListOfActive = async (): Promise<ITracking[]> => {
+    try {
+      const trackings = await TrackingModel.find()
+        .sort({ user_id: 1 })
+        .lean<ITracking[]>();
       return trackings;
     } catch (err) {
       console.error("Error retrieving tracking list:", err);

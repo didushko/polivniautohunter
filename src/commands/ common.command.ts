@@ -4,19 +4,21 @@ import { clearSession } from "../utils";
 import trackingService from "../services/tracking-service";
 // import { deleteTrackingById } from "../services/database";
 
-export class StartCommand extends Command {
+export class CommonCommand extends Command {
   constructor(bot: Telegraf) {
     super(bot);
   }
   handle(): void {
     this.bot.help((ctx) => {
-      ctx.reply(
+      clearSession(ctx);
+      return ctx.reply(
         "I can help you with your car hunt! Just a add new hunt, send me the link to your PolovniAutomobili search, and i will notify if something new appears. \nJust type /start"
       );
     });
 
-    this.bot.start((ctx) =>
-      ctx.reply(
+    this.bot.start((ctx) => {
+      clearSession(ctx);
+      return ctx.reply(
         `Hi there! Here’s what I can do:
 
   • /list – Show the hunt list
@@ -24,12 +26,12 @@ export class StartCommand extends Command {
   • /delete – Delete a hunt
   • /delete_all – Delete all hunts
   • /help – Show help`
-      )
-    );
+      );
+    });
 
     this.bot.command("cancel", (ctx) => {
       clearSession(ctx);
-      ctx.reply("Operation cancelled");
+      return ctx.reply("Operation cancelled");
     });
 
     this.bot.on("my_chat_member", (ctx) => {
@@ -41,6 +43,11 @@ export class StartCommand extends Command {
         );
         trackingService.deleteTrackingById(ctx.from.id);
       }
+    });
+
+    this.bot.command("support", async (ctx) => {
+      ctx.session.support = true;
+      return ctx.reply("type me message, or type /cancel");
     });
   }
 }

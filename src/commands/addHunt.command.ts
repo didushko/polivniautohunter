@@ -13,7 +13,7 @@ export class AddHuntCommand extends Command {
     this.bot.command("add", async (ctx) => {
       clearSession(ctx);
       ctx.session.add.currentStep = "name";
-      ctx.reply(
+      return ctx.reply(
         "Let's add a new hunt! Send me the name of the hunt, or type /cancel to stop."
       );
     });
@@ -25,21 +25,22 @@ export class AddHuntCommand extends Command {
 
         ctx.session.add.currentStep = "url";
 
-        ctx.reply(
+        return ctx.reply(
           "Got it! Now, please provide the search URL, or type /cancel to stop."
         );
       } else if (ctx.session.add.currentStep === "url") {
         if (!ctx.session.add.name) {
           clearSession(ctx);
-          ctx.reply("Oops, something went wrong. Please try again later.");
-          return;
+          return ctx.reply(
+            "Oops, something went wrong. Please try again later."
+          );
         }
         const url = ctx.message.text;
         const dates = await getDatesByUrl(url);
         if (!dates) {
-          clearSession(ctx);
-          ctx.reply("The URL is not valid. Please try again.");
-          return;
+          return ctx.reply(
+            "The URL is not valid. Please try again, or /cancel"
+          );
         }
 
         const saved = await trackingService.addTracking(
@@ -50,16 +51,18 @@ export class AddHuntCommand extends Command {
           Date.parse(dates.add) || 0,
           Date.parse(dates.ord) || 0
         );
+
         if (!saved) {
-          ctx.reply("Oops, something went wrong. Please try again later.");
-          return;
+          clearSession(ctx);
+          return ctx.reply(
+            "Oops, something went wrong. Please try again later."
+          );
         }
-        ctx.reply(
-          `The new hunt "${ctx.session.add.name}" has been added successfully.`
-        );
+        const name = ctx.session.add.name;
         clearSession(ctx);
+        return ctx.reply(`The new hunt "${name}" has been added successfully.`);
       } else {
-        next();
+        return next();
       }
     });
   }

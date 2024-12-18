@@ -2,6 +2,7 @@ import { Markup, Telegraf } from "telegraf";
 import { Command } from "./command.class";
 import trackingService from "../services/tracking-service";
 import { clearSession } from "../utils";
+import userService from "../services/user-service";
 // import { deleteTrackingByName, getListOfTracking } from "../services/database";
 
 export class DeleteHuntCommand extends Command {
@@ -18,7 +19,7 @@ export class DeleteHuntCommand extends Command {
         return ctx.reply("You have no hunts to delete.");
       }
 
-      ctx.reply(
+      return ctx.reply(
         "Choose what you want to delete:\n",
         Markup.inlineKeyboard(
           list.map((v) => Markup.button.callback(v.name, `delete_hunt_${v.name}`))
@@ -35,9 +36,10 @@ export class DeleteHuntCommand extends Command {
       );
 
       if (result) {
-        ctx.reply(`Successfully deleted the hunt named ${nameToDelete}`);
+        userService.endHunting(ctx.from.id);
+        return ctx.reply(`Successfully deleted the hunt named ${nameToDelete}`);
       } else {
-        ctx.reply(`Failed to delete the hunt named ${nameToDelete}`);
+        return ctx.reply(`Failed to delete the hunt named ${nameToDelete}`);
       }
     });
   }

@@ -327,13 +327,11 @@ async function sendMessageWithNewItem(
 }
 
 export async function sendTestMessage(bot: Telegraf) {
-  console.log("Send test message");
   const newItem = getNewFromPage(exampleHhtml, 0, 0);
   const { titles, img, link, tags } = newItem.ord[0]!;
   const type = "🌟 No Ad";
   const name = "TEST";
   const user_id = process.env.ADMIN_ID;
-  console.log("user_id", user_id);
   if (user_id) {
     sendMessageWithNewItem(bot, user_id, name, tags, titles, img, link, type);
   }
