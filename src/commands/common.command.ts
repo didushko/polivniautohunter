@@ -1,11 +1,11 @@
-import { Telegraf } from "telegraf";
+import { Scenes, Telegraf } from "telegraf";
 import { Command } from "./command.class";
 import { clearSession } from "../utils";
 import trackingService from "../services/tracking-service";
 // import { deleteTrackingById } from "../services/database";
 
 export class CommonCommand extends Command {
-  constructor(bot: Telegraf) {
+  constructor(bot: Telegraf<Scenes.WizardContext>) {
     super(bot);
   }
   handle(): void {
@@ -29,8 +29,8 @@ export class CommonCommand extends Command {
       );
     });
 
-    this.bot.command("cancel", (ctx) => {
-      clearSession(ctx);
+    this.bot.command("cancel", async (ctx) => {
+      await ctx.scene.leave();
       return ctx.reply("Operation cancelled");
     });
 
@@ -46,7 +46,6 @@ export class CommonCommand extends Command {
     });
 
     this.bot.command("support", async (ctx) => {
-      ctx.session.support = true;
       return ctx.reply("type me message, or type /cancel");
     });
   }

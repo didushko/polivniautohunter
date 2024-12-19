@@ -1,8 +1,7 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
-// import { getTrackingListBatch, updateTrackingDates } from "./database";
 import { ConfigService } from "../config/config.service";
-import { Telegraf } from "telegraf";
+import { Scenes, Telegraf } from "telegraf";
 import { getDateNow, getTitlles } from "../utils";
 import trackingService from "./tracking-service";
 import { exampleHhtml } from "../example";
@@ -209,14 +208,14 @@ export async function getNew(
   }
 }
 
-export async function sendUpdates(configService: ConfigService, bot: Telegraf) {
+export async function sendUpdates(configService: ConfigService, bot: Telegraf<Scenes.WizardContext>) {
   setInterval(
     () => processAllTrackings(bot),
     Number.parseInt(configService.get("INTERVAL")) * 60 * 1000
   );
 }
 
-export const processAllTrackings = async (bot: Telegraf) => {
+export const processAllTrackings = async (bot: Telegraf<Scenes.WizardContext>) => {
   const limit = 100;
   let offset = 0;
   const processTracking = async (tracking: {
@@ -279,13 +278,11 @@ export const processAllTrackings = async (bot: Telegraf) => {
   };
 
   while (true) {
-    // Використовуємо вашу функцію getTrackingListBatch
     const rows = await trackingService.getTrackingListBatch(offset, limit);
     if (rows.length === 0) {
       break;
     }
 
-    // Обробка кожного трекінгу
     for (const tracking of rows) {
       await processTracking({
         user_id: tracking.user_id.toString(),
@@ -295,13 +292,12 @@ export const processAllTrackings = async (bot: Telegraf) => {
         last_date: tracking.last_date,
       });
     }
-    // Зсуваємо offset для наступного батчу
     offset += limit;
   }
 };
 
 async function sendMessageWithNewItem(
-  bot: Telegraf,
+  bot: Telegraf<Scenes.WizardContext>,
   user_id: string,
   name: string,
   tags: string[],
@@ -310,23 +306,27 @@ async function sendMessageWithNewItem(
   link: string,
   type: string
 ) {
-  const messageText = `🎯 Here’s a new car in your <b>${name}</b> hunt 🎯\nType: ${type}\n\n${titles}\n\n${tags
-    .map((el) => "#" + el.replace(/\s+/g, "_"))
-    .join(" ")}`;
+  try {
+    const messageText = `🎯 Here’s a new car in your <b>${name}</b> hunt 🎯\nType: ${type}\n\n${titles}\n\n${tags
+      .map((el) => "#" + el.replace(/\s+/g, "_"))
+      .join(" ")}`;
 
-  const buttonText = "View on the website";
-  const buttonUrl = "https://www.polovniautomobili.com" + link;
+    const buttonText = "View on the website";
+    const buttonUrl = "https://www.polovniautomobili.com" + link;
 
-  await bot.telegram.sendPhoto(user_id, img, {
-    caption: messageText,
-    parse_mode: "HTML",
-    reply_markup: {
-      inline_keyboard: [[{ text: buttonText, url: buttonUrl }]],
-    },
-  });
+    await bot.telegram.sendPhoto(user_id, img, {
+      caption: messageText,
+      parse_mode: "HTML",
+      reply_markup: {
+        inline_keyboard: [[{ text: buttonText, url: buttonUrl }]],
+      },
+    });
+  } catch (e) {
+    console.log(e);
+  }
 }
 
-export async function sendTestMessage(bot: Telegraf) {
+export async function sendTestMessage(bot: Telegraf<Scenes.WizardContext>) {
   const newItem = getNewFromPage(exampleHhtml, 0, 0);
   const { titles, img, link, tags } = newItem.ord[0]!;
   const type = "🌟 No Ad";
