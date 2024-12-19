@@ -14,6 +14,7 @@ import { AdminCommand } from "./commands/admin.command";
 import { ServiceMiddleware } from "./commands/service.middlware";
 import { addHuntingScene } from "./scenes/addHunting.scene";
 import { HuntCommand } from "./commands/hunt.command";
+import { adminShowUsersScene } from "./scenes/admin/showUsers.scene";
 
 class Bot {
   bot: Telegraf<Scenes.WizardContext>;
@@ -26,7 +27,7 @@ class Bot {
     );
   }
   init() {
-    this.scenes = [addHuntingScene];
+    this.scenes = [addHuntingScene, adminShowUsersScene];
     const stage = new Scenes.Stage<Scenes.WizardContext>(this.scenes);
     this.bot.use(session());
     this.bot.use(stage.middleware());

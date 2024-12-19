@@ -1,6 +1,5 @@
 import { Scenes, Telegraf } from "telegraf";
 import { Command } from "./command.class";
-import { clearSession } from "../utils";
 import trackingService from "../services/tracking-service";
 // import { deleteTrackingById } from "../services/database";
 
@@ -10,14 +9,25 @@ export class CommonCommand extends Command {
   }
   handle(): void {
     this.bot.help((ctx) => {
-      clearSession(ctx);
       return ctx.reply(
-        "I can help you with your car hunt! Just a add new hunt, send me the link to your PolovniAutomobili search, and i will notify if something new appears. \nJust type /start"
+        'I can help you with your car hunt! Just a add new hunt, send me the link to your <a href="https://www.polovniautomobili.com/auto-oglasi/pretraga" >PolovniAutomobili</a> search, and i will notify if something new appears. \nJust type /start',
+        {
+          parse_mode: "HTML",
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: "Polovniautomobili",
+                  url: "https://www.polovniautomobili.com/auto-oglasi/pretraga",
+                },
+              ],
+            ],
+          },
+        }
       );
     });
 
     this.bot.start((ctx) => {
-      clearSession(ctx);
       return ctx.reply(
         `Hi there! Here’s what I can do:
 

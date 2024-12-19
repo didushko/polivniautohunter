@@ -208,14 +208,19 @@ export async function getNew(
   }
 }
 
-export async function sendUpdates(configService: ConfigService, bot: Telegraf<Scenes.WizardContext>) {
+export async function sendUpdates(
+  configService: ConfigService,
+  bot: Telegraf<Scenes.WizardContext>
+) {
   setInterval(
     () => processAllTrackings(bot),
     Number.parseInt(configService.get("INTERVAL")) * 60 * 1000
   );
 }
 
-export const processAllTrackings = async (bot: Telegraf<Scenes.WizardContext>) => {
+export const processAllTrackings = async (
+  bot: Telegraf<Scenes.WizardContext>
+) => {
   const limit = 100;
   let offset = 0;
   const processTracking = async (tracking: {
@@ -233,11 +238,6 @@ export const processAllTrackings = async (bot: Telegraf<Scenes.WizardContext>) =
     if (!newItems) {
       return;
     }
-    console.log(
-      `${getDateNow()}---send ${
-        newItems.newWithAdd.length + newItems.newOrdinary.length
-      } to user ${tracking.user_id} with hunting name ${tracking.name}`
-    );
 
     await trackingService.updateTrackingDates(
       tracking.user_id,
@@ -275,6 +275,12 @@ export const processAllTrackings = async (bot: Telegraf<Scenes.WizardContext>) =
         "📢 With Ad"
       );
     });
+
+    console.log(
+      `${getDateNow()}---send ${
+        newItems.newWithAdd.length + newItems.newOrdinary.length
+      } to user ${tracking.user_id} with hunting name ${tracking.name}`
+    );
   };
 
   while (true) {

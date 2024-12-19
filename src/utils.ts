@@ -1,16 +1,8 @@
 import axios from "axios";
-import { Context, Scenes } from "telegraf";
+import { Scenes } from "telegraf";
 import * as cheerio from "cheerio";
 import { IUser } from "./database/User.model";
 import { Message } from "telegraf/typings/core/types/typegram";
-
-export function clearSession(ctx: Context) {
-  // if (ctx.session.add.currentStep || ctx.session.delete.currentStep) {
-  //   ctx.session.add.currentStep = undefined;
-  //   ctx.session.delete.currentStep = undefined;
-  //   ctx.session.support = false;
-  // }
-}
 
 export const isTextMessageNotEmpty = (
   message: unknown

@@ -1,6 +1,5 @@
 import { Scenes, Telegraf } from "telegraf";
 import { Command } from "./command.class";
-import { clearSession, formatUserTable } from "../utils";
 import trackingService from "../services/tracking-service";
 import {
   processAllTrackings,
@@ -16,7 +15,6 @@ export class AdminCommand extends Command {
   handle(): void {
     this.bot.command("admin", async (ctx, next) => {
       if (ctx.from.id.toString() === process.env.ADMIN_ID) {
-        clearSession(ctx);
         return ctx.reply(`Що будем робити?:`, {
           reply_markup: {
             inline_keyboard: [
@@ -70,29 +68,7 @@ export class AdminCommand extends Command {
     });
 
     this.bot.action("admin_show_users", async (ctx) => {
-      if (ctx.from.id.toString() === process.env.ADMIN_ID) {
-        await renderUserList(ctx, () => 0);
-      }
-    });
-
-    this.bot.action("users_sort_oldest", async (ctx) => {
-      if (ctx.from.id.toString() === process.env.ADMIN_ID) {
-        await renderUserList(
-          ctx,
-          (a, b) => ((b.first_request || 0) > (a.first_request || 0) ? -1 : 1),
-          "users_sort_oldest"
-        );
-      }
-    });
-
-    this.bot.action("users_sort_max_hunts", async (ctx) => {
-      if (ctx.from.id.toString() === process.env.ADMIN_ID) {
-        await renderUserList(
-          ctx,
-          (a, b) => b.total_hunting - a.total_hunting,
-          "users_sort_max_hunts"
-        );
-      }
+      ctx.scene.enter("admin_show_users");
     });
 
     this.bot.action("admin_send_test", async (ctx, next) => {
@@ -120,45 +96,6 @@ export class AdminCommand extends Command {
           }
         });
       }
-    });
-
-    // Function to handle user list rendering
-    const renderUserList = async (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ctx: any,
-      sortFn: (a: IUser, b: IUser) => number,
-      sortMode?: string
-    ) => {
-      if (ctx.session.add.currentStep === sortMode) {
-        return;
-      }
-      ctx.session.add.currentStep = sortMode;
-      const users: IUser[] = await userService.getUsers();
-      let mode = "reply";
-      if (sortMode) {
-        mode = "editMessageText";
-        users.sort(sortFn);
-      }
-      const text =
-        `Ось список користувачівd, всього \\- ${users.length}:${
-          sortMode ? "\nВідсортовано: " + sortMode.replace(/_/g, " ") : ""
-        }` +
-        "```\n" +
-        formatUserTable(users) +
-        "```";
-
-      await ctx[mode](text, {
-        parse_mode: "MarkdownV2",
-        reply_markup: generateSortButtons(),
-      });
-    };
-    const generateSortButtons = () => ({
-      inline_keyboard: [
-        [
-          { text: "Oldest", callback_data: "users_sort_oldest" },
-          { text: "Max hunts", callback_data: "users_sort_max_hunts" },
-        ],
-      ],
     });
   }
 }
