@@ -35,7 +35,11 @@ export class CommonCommand extends Command {
   • /add – Add a new hunt
   • /delete – Delete a hunt
   • /delete_all – Delete all hunts
-  • /help – Show help`
+  • /help – Show help${
+    ctx.from.id.toString() === process.env.ADMIN_ID
+      ? "\n\t• /admin – Admin commands"
+      : ""
+  }`
       );
     });
 
