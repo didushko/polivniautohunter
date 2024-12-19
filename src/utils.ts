@@ -124,8 +124,9 @@ export function formatUserTable(users: IUser[], sort?: () => number): string {
   if (sort) {
     users.sort(sort);
   }
-  users.forEach((user) => {
-    for (let i = 0; i < 25; i++) {
+  users
+    .filter((_, i) => i < 10)
+    .forEach((user) => {
       data.push([
         user.user_id.toString(),
         user.user_name || "",
@@ -134,8 +135,7 @@ export function formatUserTable(users: IUser[], sort?: () => number): string {
         user.last_hunt?.toString() || "",
         user.total_hunting?.toString(),
       ]);
-    }
-  });
+    });
 
   const columnWidths = data[0].map((_, i) =>
     Math.max(...data.map((row) => row[i].length))
