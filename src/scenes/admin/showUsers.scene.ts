@@ -38,7 +38,6 @@ export const adminShowUsersScene = new Scenes.WizardScene<WizardContext>(
       return;
     }
     await ctx.reply("Back to main menu.");
-    await ctx.answerCbQuery();
     return ctx.scene.leave();
   }
 );

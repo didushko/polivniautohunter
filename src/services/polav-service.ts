@@ -260,7 +260,7 @@ export const processAllTrackings = async (
         item.titles,
         item.img,
         item.link,
-        "🌟 No Ad"
+        "🌟 Regular"
       )
     );
     newItems?.newWithAdd.forEach(async (item) => {
@@ -272,7 +272,7 @@ export const processAllTrackings = async (
         item.titles,
         item.img,
         item.link,
-        "📢 With Ad"
+        "📢 Sponsored"
       );
     });
 
@@ -335,7 +335,7 @@ async function sendMessageWithNewItem(
 export async function sendTestMessage(bot: Telegraf<Scenes.WizardContext>) {
   const newItem = getNewFromPage(exampleHhtml, 0, 0);
   const { titles, img, link, tags } = newItem.ord[0]!;
-  const type = "🌟 No Ad";
+  const type = "🌟 Regular";
   const name = "TEST";
   const user_id = process.env.ADMIN_ID;
   if (user_id) {
