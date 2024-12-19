@@ -55,6 +55,7 @@ export class AdminCommand extends Command {
     this.bot.action("admin_show_active", async (ctx, next) => {
       if (ctx.from.id.toString() === process.env.ADMIN_ID) {
         const list = await trackingService.getListOfActive();
+        await ctx.answerCbQuery();
         return ctx.reply(
           `Ось список активних, всього - ${list.length}:\n\n${list
             .map((u) => `${u.user_id} \t @${u.user_name} \t ${u.name}\n`)
@@ -68,16 +69,19 @@ export class AdminCommand extends Command {
     });
 
     this.bot.action("admin_show_users", async (ctx) => {
+      await ctx.answerCbQuery();
       ctx.scene.enter("admin_show_users");
     });
 
     this.bot.action("admin_send_test", async (ctx, next) => {
+      await ctx.answerCbQuery();
       if (ctx.from.id.toString() === process.env.ADMIN_ID) {
         await sendTestMessage(this.bot);
         return next();
       }
     });
     this.bot.action("admin_send_all", async (ctx) => {
+      await ctx.answerCbQuery();
       if (ctx.from.id.toString() === process.env.ADMIN_ID) {
         return processAllTrackings(this.bot);
       }
@@ -95,6 +99,7 @@ export class AdminCommand extends Command {
             console.log(e);
           }
         });
+        await ctx.answerCbQuery();
       }
     });
   }

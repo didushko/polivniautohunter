@@ -47,6 +47,23 @@ class TrackingService extends DatabaseConnection {
     }
   };
 
+  updateUrl = async (
+    userId: string,
+    name: string,
+    newUrl: string
+  ): Promise<boolean> => {
+    try {
+      const result = await TrackingModel.updateOne(
+        { user_id: userId, name },
+        { $set: { url: newUrl } }
+      );
+      return result.matchedCount > 0;
+    } catch (err) {
+      console.error("Error updating tracking dates:", err);
+      return false;
+    }
+  };
+
   getListOfTracking = async (userId: number): Promise<ITracking[]> => {
     try {
       const trackings = await TrackingModel.find(
@@ -85,13 +102,13 @@ class TrackingService extends DatabaseConnection {
     }
   };
 
-  deleteTrackingById = async (userId: number): Promise<boolean> => {
+  deleteTrackingById = async (userId: number): Promise<number> => {
     try {
       const result = await TrackingModel.deleteMany({ user_id: userId });
-      return result.deletedCount > 0;
+      return result.deletedCount;
     } catch (err) {
       console.error("Error deleting tracking by ID:", err);
-      return false;
+      return 0;
     }
   };
 

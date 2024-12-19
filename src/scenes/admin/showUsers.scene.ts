@@ -32,11 +32,13 @@ export const adminShowUsersScene = new Scenes.WizardScene<WizardContext>(
       }
       if (ctx.callbackQuery?.data === "exit") {
         await ctx.reply("Back to main menu.");
+        await ctx.answerCbQuery();
         return ctx.scene.leave();
       }
       return;
     }
     await ctx.reply("Back to main menu.");
+    await ctx.answerCbQuery();
     return ctx.scene.leave();
   }
 );

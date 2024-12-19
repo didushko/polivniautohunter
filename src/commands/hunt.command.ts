@@ -13,10 +13,12 @@ export class HuntCommand extends Command {
     });
 
     this.bot.command("delete_all", async (ctx) => {
-      const res = await trackingService.deleteTrackingById(ctx.from.id);
-      if (res) {
+      const deleted = await trackingService.deleteTrackingById(ctx.from.id);
+      if (deleted) {
         userService.endHunting(ctx.from.id);
-        return ctx.reply("Your hunt list is currently empty.");
+        return ctx.reply(
+          `Deleted ${deleted}.\nYour hunt list is currently empty. You can /add new one`
+        );
       } else {
         return ctx.reply("Oops, something went wrong. Please try again later.");
       }
@@ -28,15 +30,27 @@ export class HuntCommand extends Command {
         return ctx.reply(`Here’s what we’re hunting now:`, {
           reply_markup: {
             inline_keyboard: [
-              list.map((i) => ({
-                text: i.name,
-                url: i.url,
-              })),
+              ...list
+                .map((i) => [
+                  {
+                    text: "🎯"+i.name,
+                    url: i.url,
+                  },
+                  {
+                    text: "🗑 delete",
+                    callback_data: `delete_hunt_${i.name}`,
+                  },
+                ])
+                .filter((_, i) => i < 48),
+              [{ text: "❌ delete all", callback_data: "delete_all_hunt" }],
+              [{ text: "➕ add new hunt", callback_data: "add_new_hunt" }],
             ],
           },
         });
       else {
-        return ctx.reply("You’re not hunting anything.");
+        return ctx.reply(
+          "You’re not hunting anything. But you can /add new hunting."
+        );
       }
     });
 
@@ -51,7 +65,7 @@ export class HuntCommand extends Command {
         "Choose what you want to delete:\n",
         Markup.inlineKeyboard(
           list.map((v) =>
-            Markup.button.callback(v.name, `delete_hunt_${v.name}`)
+            Markup.button.callback("🗑 " + v.name, `delete_hunt_${v.name}`)
           )
         )
       );
@@ -67,10 +81,27 @@ export class HuntCommand extends Command {
 
       if (result) {
         userService.endHunting(ctx.from.id);
+        await ctx.answerCbQuery("Hunt " + nameToDelete + " deleted!");
         return ctx.reply(`Successfully deleted the hunt named ${nameToDelete}`);
       } else {
         return ctx.reply(`Failed to delete the hunt named ${nameToDelete}`);
       }
+    });
+    this.bot.action("delete_all_hunt", async (ctx) => {
+      const deleted = await trackingService.deleteTrackingById(ctx.from.id);
+      await ctx.answerCbQuery();
+      if (deleted) {
+        userService.endHunting(ctx.from.id);
+        return ctx.reply(
+          `Deleted ${deleted}.\nYour hunt list is currently empty. You can /add new one`
+        );
+      } else {
+        return ctx.reply("Oops, something went wrong. Please try again later.");
+      }
+    });
+    this.bot.action("add_new_hunt", async (ctx) => {
+      await ctx.answerCbQuery();
+      return ctx.scene.enter("addHuntingScene");
     });
   }
 }

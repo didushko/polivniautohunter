@@ -313,7 +313,7 @@ async function sendMessageWithNewItem(
   type: string
 ) {
   try {
-    const messageText = `🎯 Here’s a new car in your <b>${name}</b> hunt 🎯\nType: ${type}\n\n${titles}\n\n${tags
+    const messageText = `Here’s a new car in your 🎯<b>${name}</b> hunt\nType: ${type}\n\n${titles}\n\n${tags
       .map((el) => "#" + el.replace(/\s+/g, "_"))
       .join(" ")}`;
 
