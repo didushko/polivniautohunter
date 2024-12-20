@@ -1,7 +1,6 @@
 import { Scenes, Telegraf } from "telegraf";
 import { Command } from "./command.class";
 import trackingService from "../services/tracking-service";
-// import { deleteTrackingById } from "../services/database";
 
 export class CommonCommand extends Command {
   constructor(bot: Telegraf<Scenes.WizardContext>) {
@@ -35,6 +34,7 @@ export class CommonCommand extends Command {
   • /add – Add a new hunt
   • /delete – Delete a hunt
   • /delete_all – Delete all hunts
+  • /support – Suppot & feedback
   • /help – Show help${
     ctx.from.id.toString() === process.env.ADMIN_ID
       ? "\n\t• /admin – Admin commands"
@@ -60,7 +60,27 @@ export class CommonCommand extends Command {
     });
 
     this.bot.command("support", async (ctx) => {
-      return ctx.reply("type me message, or type /cancel");
+      ctx.scene.enter("chatWithAdmin");
+      // return ctx.reply("Support menu", {
+      //   reply_markup: {
+      //     inline_keyboard: [
+      //       [{ text: "Send message to admin", callback_data: "chatWithAdmin" }],
+      //     ],
+      //   },
+      // });
+    });
+    this.bot.action("chatWithAdmin", async (ctx) => {
+      ctx.scene.enter("chatWithAdmin");
+    });
+
+    this.bot.action(/^helpdesk_answer_(\d+)_(\d+)$/, async (ctx) => {
+      const matches = ctx.match;
+      const userId = matches[1];
+      const messageId = matches[2];
+      ctx.scene.enter("chatWithAdmin", {
+        chat_id: userId,
+        message_id: messageId,
+      });
     });
   }
 }
