@@ -66,7 +66,7 @@ function getTitlles(
 ) {
   const price = article.attr("data-price") || "";
   const title = article.find("img").attr("title") || "";
-  const titles = [`🏷️ <b>${title}</b>\n`, " 💰 — " + price];
+  const titles = [`🏷️ <b>${title}</b>\n`, "💰 — " + price];
 
   article.find(".setInfo").each((index, setInfo) => {
     html(setInfo)

@@ -33,7 +33,7 @@ export class HuntCommand extends Command {
               ...list
                 .map((i) => [
                   {
-                    text: "🎯"+i.name,
+                    text: "🎯" + i.name,
                     url: i.url,
                   },
                   {
@@ -49,7 +49,14 @@ export class HuntCommand extends Command {
         });
       else {
         return ctx.reply(
-          "You’re not hunting anything. But you can /add new hunting."
+          "You’re not hunting anything. But you can /add new hunting.",
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: "➕ add new hunt", callback_data: "add_new_hunt" }],
+              ],
+            },
+          }
         );
       }
     });

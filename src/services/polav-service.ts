@@ -228,6 +228,7 @@ export const processAllTrackings = async (
           bot,
           tracking.user_id,
           tracking.name,
+          tracking.url,
           item.tags,
           item.titles,
           item.img,
@@ -242,6 +243,7 @@ export const processAllTrackings = async (
           bot,
           tracking.user_id,
           tracking.name,
+          tracking.url,
           item.tags,
           item.titles,
           item.img,
@@ -279,7 +281,8 @@ export const processAllTrackings = async (
 async function sendMessageWithNewItem(
   bot: Telegraf<Scenes.WizardContext>,
   user_id: string,
-  name: string,
+  huntName: string,
+  huntUrl: string,
   tags: string[],
   titles: string,
   img: string,
@@ -287,7 +290,7 @@ async function sendMessageWithNewItem(
   type: string
 ) {
   try {
-    const messageText = `Here’s a new car in your 🎯<b>${name}</b> hunt\nType: ${type}\n\n${titles}\n\n${tags
+    const messageText = `Here’s a new car in your 🎯<a href='${huntUrl}'><b>${huntName}</b></a> hunt\nType: ${type}\n\n${titles}\n\n${tags
       .map((el) => "#" + el.replace(/\s+/g, "_"))
       .join(" ")}`;
 
@@ -322,7 +325,18 @@ export async function sendTestMessage(bot: Telegraf<Scenes.WizardContext>) {
   const type = "🌟 Regular";
   const name = "TEST";
   const user_id = process.env.ADMIN_ID;
+  const url = "https://www.polovniautomobili.com/auto-oglasi/";
   if (user_id) {
-    sendMessageWithNewItem(bot, user_id, name, tags, titles, img, link, type);
+    sendMessageWithNewItem(
+      bot,
+      user_id,
+      name,
+      url,
+      tags,
+      titles,
+      img,
+      link,
+      type
+    );
   }
 }
