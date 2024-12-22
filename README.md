@@ -2,7 +2,7 @@
 
 ## Try the Bot
 
-You can test the working version of the bot here: [MyBot](https://t.me/polovniAutoHunter_bot)
+You can test the working version of the bot here: [PolovniAutoHunter](https://t.me/polovniAutoHunter_bot)
 
 ## Project Purpose
 
