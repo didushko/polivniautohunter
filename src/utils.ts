@@ -1,4 +1,3 @@
-import axios from "axios";
 import { Scenes } from "telegraf";
 import * as cheerio from "cheerio";
 import { IUser } from "./database/User.model";
@@ -36,26 +35,32 @@ export function getDateNow() {
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
-export function selfReq() {
-  const p1 = "https://poliv";
-  const p2 = "niautohunter.onren";
-  const p3 = "der.com";
-  const url = p1 + p2 + p3;
+export function getDataFromArticle(
+  html: ReturnType<typeof cheerio.load>,
+  article: ReturnType<ReturnType<typeof cheerio.load>>
+) {
+  const id = article.attr("data-classifiedid") || "";
+  const img = article.find("img").attr("data-src") || "";
+  const link = article.find("a").attr("href") || "";
+  const renewDateStr = article.attr("data-renewdate");
+  const date = renewDateStr ? Date.parse(renewDateStr) : 0;
 
-  setInterval(async () => {
-    await new Promise((resolve) => {
-      setTimeout(resolve, (Math.floor(Math.random() * 3) + 1) * 60 * 1000);
-    });
-    axios.get(url + `/send/`).catch((error) => {
-      console.error(
-        `selfReq Error -- ${new Date().toISOString()}:`,
-        error.message
-      );
-    });
-  }, 10 * 60 * 1000);
+  const titles = getTitlles(html, article);
+  const tags = article
+    .find(".badge span")
+    .map((index, element) => html(element).text())
+    .get();
+  return {
+    id: id,
+    titles: titles.join("\n"),
+    img,
+    link,
+    date,
+    tags,
+  };
 }
 
-export function getTitlles(
+function getTitlles(
   html: ReturnType<typeof cheerio.load>,
   article: ReturnType<ReturnType<typeof cheerio.load>>
 ) {
@@ -117,13 +122,10 @@ function replaceAutoType(text: string) {
   return `${text.replace(typeRegex, (match) => emojiMap[match] || match)}`;
 }
 
-export function formatUserTable(users: IUser[], sort?: () => number): string {
+export function formatUserTable(users: IUser[]): string {
   const data = [
     ["ID", "NAME", "First request", "First hunt", "Last hunt", "Total_hunting"],
   ];
-  if (sort) {
-    users.sort(sort);
-  }
   users
     .filter((_, i) => i < 10)
     .forEach((user) => {

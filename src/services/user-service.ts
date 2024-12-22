@@ -28,7 +28,7 @@ class UserService extends DatabaseConnection {
     }
   };
 
-  async newHunting(userId: number): Promise<void> {
+  async newHunting(userId: number, name: string): Promise<void> {
     try {
       const currentDate = new Date().toISOString().split("T")[0];
 
@@ -39,6 +39,9 @@ class UserService extends DatabaseConnection {
       const user = await userModel.findOne({ user_id: userId });
       if (!user?.first_hunt) {
         Object.assign(updateData, { first_hunt: currentDate });
+      }
+      if(name && !user?.user_name){
+        Object.assign(updateData, { user_name: name });
       }
       await userModel.updateOne({ user_id: userId }, updateData);
     } catch (err) {

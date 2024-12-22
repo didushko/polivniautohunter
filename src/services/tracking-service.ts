@@ -17,11 +17,11 @@ class TrackingService extends DatabaseConnection {
         user_name: userName,
         url,
         name,
-        last_date_with_add: lastDateWithAdd,
-        last_date: lastDate,
+        last_date_with_add: lastDateWithAdd || 0,
+        last_date: lastDate || 0,
       });
       await tracking.save();
-      await userService.newHunting(userId);
+      userService.newHunting(userId, userName);
       return true;
     } catch (err) {
       console.error("Error adding tracking data:", err);

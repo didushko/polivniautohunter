@@ -5,8 +5,6 @@ import {
   processAllTrackings,
   sendTestMessage,
 } from "../services/polav-service";
-import { IUser } from "../database/User.model";
-import userService from "../services/user-service";
 
 export class AdminCommand extends Command {
   constructor(bot: Telegraf<Scenes.WizardContext>) {
@@ -88,17 +86,7 @@ export class AdminCommand extends Command {
     });
     this.bot.action("admin_send_to_all", async (ctx) => {
       if (ctx.from.id.toString() === process.env.ADMIN_ID) {
-        const users: IUser[] = await userService.getUsers();
-        users.forEach((u) => {
-          try {
-            this.bot.telegram.sendMessage(
-              u.user_id,
-              "Привет, Теодор! Тестовое сообщение =)"
-            );
-          } catch (e) {
-            console.log(e);
-          }
-        });
+        ctx.scene.enter("admin_send_message_to_all");
         await ctx.answerCbQuery();
       }
     });

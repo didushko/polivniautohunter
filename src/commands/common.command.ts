@@ -43,11 +43,6 @@ export class CommonCommand extends Command {
       );
     });
 
-    this.bot.command("cancel", async (ctx) => {
-      await ctx.scene.leave();
-      return ctx.reply("Operation cancelled");
-    });
-
     this.bot.on("my_chat_member", (ctx) => {
       const status = ctx.update.my_chat_member.new_chat_member.status;
 
