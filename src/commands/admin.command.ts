@@ -5,6 +5,7 @@ import {
   processAllTrackings,
   sendTestMessage,
 } from "../services/polav-service";
+import { ParseMode } from "telegraf/typings/core/types/typegram";
 
 export class AdminCommand extends Command {
   constructor(bot: Telegraf<Scenes.WizardContext>) {
@@ -13,38 +14,7 @@ export class AdminCommand extends Command {
   handle(): void {
     this.bot.command("admin", async (ctx, next) => {
       if (ctx.from.id.toString() === process.env.ADMIN_ID) {
-        return ctx.reply(`Що будем робити?:`, {
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: "Активні охоти",
-                  callback_data: "admin_show_active",
-                },
-                {
-                  text: "Список користувачів",
-                  callback_data: "admin_show_users",
-                },
-              ],
-              [
-                {
-                  text: "Оновити для всіх",
-                  callback_data: "admin_send_all",
-                },
-                {
-                  text: "Тестове повідомлення",
-                  callback_data: "admin_send_test",
-                },
-              ],
-              [
-                {
-                  text: "Повідомлення для всіх",
-                  callback_data: "admin_send_to_all",
-                },
-              ],
-            ],
-          },
-        });
+        return ctx.reply(adminMenu.text, adminMenu.options);
       } else {
         return next();
       }
@@ -92,3 +62,40 @@ export class AdminCommand extends Command {
     });
   }
 }
+
+export const adminMenu = {
+  text: "<b>Меню адміністратора</b>",
+  options: {
+    parse_mode: "HTML" as ParseMode,
+    reply_markup: {
+      inline_keyboard: [
+        [
+          {
+            text: "Активні охоти",
+            callback_data: "admin_show_active",
+          },
+          {
+            text: "Список користувачів",
+            callback_data: "admin_show_users",
+          },
+        ],
+        [
+          {
+            text: "Оновити для всіх",
+            callback_data: "admin_send_all",
+          },
+          {
+            text: "Тестове повідомлення",
+            callback_data: "admin_send_test",
+          },
+        ],
+        [
+          {
+            text: "Повідомлення для всіх",
+            callback_data: "admin_send_to_all",
+          },
+        ],
+      ],
+    },
+  },
+};

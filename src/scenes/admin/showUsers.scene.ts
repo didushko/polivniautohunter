@@ -1,9 +1,10 @@
-import { Scenes } from "telegraf";
+import { Scenes, Telegraf } from "telegraf";
 import { IUser } from "../../database/User.model";
 import userService from "../../services/user-service";
 import { formatUserTable } from "../../utils";
 import { WizardContext, WizardSessionData } from "telegraf/typings/scenes";
 import { ExtraEditMessageText } from "telegraf/typings/telegram-types";
+import { adminMenu } from "../../commands/admin.command";
 
 const modeMap: Record<
   string,
@@ -25,33 +26,57 @@ const modeMap: Record<
   },
 };
 
-export const adminShowUsersScene = new Scenes.WizardScene<WizardContext>(
-  "admin_show_users",
-  async (ctx) => {
-    if (ctx.from?.id.toString() === process.env.ADMIN_ID) {
-      await renderUserList(ctx);
-      return ctx.wizard.next();
-    }
-    await ctx.reply("You are not authorized to use this command.");
-    return ctx.scene.leave();
-  },
-  async (ctx) => {
-    if (ctx.callbackQuery && "data" in ctx.callbackQuery) {
-      if (Object.keys(modeMap).includes(ctx.callbackQuery?.data)) {
-        await renderUserList(ctx, ctx.callbackQuery.data);
-        await ctx.answerCbQuery();
+interface IWizardState {
+  message_id?: number;
+}
+
+type IWizardContext = Scenes.WizardContext & {
+  wizard: Scenes.WizardContext["wizard"] & {
+    state: IWizardState;
+  };
+};
+
+export const adminShowUsersScene = (bot: Telegraf<WizardContext>) =>
+  new Scenes.WizardScene<IWizardContext>(
+    "admin_show_users",
+    async (ctx) => {
+      if (ctx.from?.id.toString() === process.env.ADMIN_ID) {
+        const m = await renderUserList(ctx);
+        if (m !== true) {
+          ctx.wizard.state.message_id = m.message_id;
+        }
+        return ctx.wizard.next();
       }
-      if (ctx.callbackQuery?.data === "exit") {
-        await ctx.reply("Exit");
-        await ctx.answerCbQuery();
-        return ctx.scene.leave();
+      await ctx.reply("You are not authorized to use this command.");
+      return ctx.scene.leave();
+    },
+    async (ctx) => {
+      if (ctx.callbackQuery && "data" in ctx.callbackQuery) {
+        if (Object.keys(modeMap).includes(ctx.callbackQuery?.data)) {
+          await renderUserList(ctx, ctx.callbackQuery.data);
+          await ctx.answerCbQuery();
+        }
+        if (ctx.callbackQuery?.data === "exit") {
+          await ctx.answerCbQuery();
+          await ctx.editMessageText(adminMenu.text, adminMenu.options);
+          return ctx.scene.leave();
+        }
+        return;
       }
-      return;
+      await ctx.scene.leave();
+      await ctx.telegram.editMessageText(
+        ctx.chat?.id,
+        ctx.wizard.state.message_id,
+        undefined,
+        adminMenu.text,
+        adminMenu.options
+      );
+      return bot.handleUpdate({
+        update_id: ctx.update.update_id,
+        message: ctx.message!,
+      });
     }
-    await ctx.reply("Unknown command, back to main menu");
-    return ctx.scene.leave();
-  }
-);
+  );
 
 const renderUserList = async (
   ctx: WizardContext<WizardSessionData>,
@@ -69,7 +94,7 @@ const renderUserList = async (
     "```\n" +
     formatUserTable(users) +
     "```";
-  await ctx.editMessageText(text, generateSortButtons(sortMode));
+  return await ctx.editMessageText(text, generateSortButtons(sortMode));
 };
 
 const generateSortButtons = (sortMode?: string): ExtraEditMessageText => {
@@ -84,7 +109,7 @@ const generateSortButtons = (sortMode?: string): ExtraEditMessageText => {
         sortButton,
         [
           {
-            text: "Exit",
+            text: "🔙 Назад",
             callback_data: "exit",
           },
         ],

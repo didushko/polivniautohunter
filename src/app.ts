@@ -27,7 +27,7 @@ export class Bot {
   init() {
     this.scenes = [
       addHuntingScene,
-      adminShowUsersScene,
+      adminShowUsersScene(this.bot),
       chatWithAdminScene,
       adminSendMessageToAllScene,
     ];
