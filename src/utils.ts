@@ -17,7 +17,7 @@ export async function handleCancel(
     await ctx.reply("Please provide a valid field");
     return false;
   } else if (ctx.message?.text === "/cancel") {
-    await ctx.reply("Scene canceled.");
+    await ctx.reply("Operation canceled.");
     await ctx.scene.leave();
     return false;
   }

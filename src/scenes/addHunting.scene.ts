@@ -30,7 +30,19 @@ export const addHuntingScene = new Scenes.WizardScene<AddHuntingWizardContext>(
     ctx.wizard.state.name = text;
     await ctx.reply(
       "Got it! Now, please provide the search <b>URL</b>, or type /cancel to stop.",
-      { parse_mode: "HTML" }
+      {
+        parse_mode: "HTML",
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "Go to Polovniautomobili",
+                url: "https://www.polovniautomobili.com/auto-oglasi/pretraga",
+              },
+            ],
+          ],
+        },
+      }
     );
     return ctx.wizard.next();
   },
