@@ -1,6 +1,6 @@
-import DatabaseConnection from "../database/DatabaseConnetion";
-import TrackingModel, { ITracking } from "../database/Tracking.model";
-import userService from "./user-service";
+import DatabaseConnection from '../database/DatabaseConnetion';
+import TrackingModel, { ITracking } from '../database/Tracking.model';
+import userService from './user-service';
 
 class TrackingService extends DatabaseConnection {
   addTracking = async (
@@ -14,7 +14,7 @@ class TrackingService extends DatabaseConnection {
     try {
       const tracking = new TrackingModel({
         user_id: userId,
-        user_name: userName,
+        user_name: userName || '',
         url,
         name,
         last_date_with_add: lastDateWithAdd || 0,
@@ -24,7 +24,7 @@ class TrackingService extends DatabaseConnection {
       userService.newHunting(userId, userName);
       return true;
     } catch (err) {
-      console.error("Error adding tracking data:", err);
+      console.error('Error adding tracking data:', err);
       return false;
     }
   };
@@ -42,7 +42,7 @@ class TrackingService extends DatabaseConnection {
       );
       return result.matchedCount > 0;
     } catch (err) {
-      console.error("Error updating tracking dates:", err);
+      console.error('Error updating tracking dates:', err);
       return false;
     }
   };
@@ -59,7 +59,7 @@ class TrackingService extends DatabaseConnection {
       );
       return result.matchedCount > 0;
     } catch (err) {
-      console.error("Error updating tracking dates:", err);
+      console.error('Error updating tracking dates:', err);
       return false;
     }
   };
@@ -72,7 +72,7 @@ class TrackingService extends DatabaseConnection {
       );
       return trackings;
     } catch (err) {
-      console.error("Error retrieving tracking list:", err);
+      console.error('Error retrieving tracking list:', err);
       return [];
     }
   };
@@ -84,7 +84,7 @@ class TrackingService extends DatabaseConnection {
         .lean<ITracking[]>();
       return trackings;
     } catch (err) {
-      console.error("Error retrieving tracking list:", err);
+      console.error('Error retrieving tracking list:', err);
       return [];
     }
   };
@@ -97,7 +97,7 @@ class TrackingService extends DatabaseConnection {
       const result = await TrackingModel.deleteOne({ user_id: userId, name });
       return result.deletedCount > 0;
     } catch (err) {
-      console.error("Error deleting tracking by name:", err);
+      console.error('Error deleting tracking by name:', err);
       return false;
     }
   };
@@ -107,7 +107,7 @@ class TrackingService extends DatabaseConnection {
       const result = await TrackingModel.deleteMany({ user_id: userId });
       return result.deletedCount;
     } catch (err) {
-      console.error("Error deleting tracking by ID:", err);
+      console.error('Error deleting tracking by ID:', err);
       return 0;
     }
   };
@@ -117,7 +117,7 @@ class TrackingService extends DatabaseConnection {
       const trackings = await TrackingModel.find().skip(offset).limit(limit);
       return trackings;
     } catch (err) {
-      console.error("Error retrieving tracking batch:", err);
+      console.error('Error retrieving tracking batch:', err);
       return [];
     }
   };
