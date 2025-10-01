@@ -14,7 +14,7 @@ class TrackingService extends DatabaseConnection {
     try {
       const tracking = new TrackingModel({
         user_id: userId,
-        user_name: userName || '',
+        user_name: userName || 'unknown_user',
         url,
         name,
         last_date_with_add: lastDateWithAdd || 0,

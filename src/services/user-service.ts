@@ -1,5 +1,5 @@
-import DatabaseConnection from "../database/DatabaseConnetion";
-import userModel, { IUser } from "../database/User.model";
+import DatabaseConnection from '../database/DatabaseConnetion';
+import userModel, { IUser } from '../database/User.model';
 
 class UserService extends DatabaseConnection {
   addUserIfNotExists = async (
@@ -13,7 +13,7 @@ class UserService extends DatabaseConnection {
         if (existingUser) {
           return;
         }
-        const currentDate = new Date().toISOString().split("T")[0];
+        const currentDate = new Date().toISOString().split('T')[0];
         const newUser = new userModel({
           user_id,
           user_name,
@@ -24,13 +24,13 @@ class UserService extends DatabaseConnection {
         await newUser.save();
       }
     } catch (err) {
-      console.error("Error adding user:", err);
+      console.error('Error adding user:', err);
     }
   };
 
   async newHunting(userId: number, name: string): Promise<void> {
     try {
-      const currentDate = new Date().toISOString().split("T")[0];
+      const currentDate = new Date().toISOString().split('T')[0];
 
       const updateData = {
         $inc: { total_hunting: 1 },
@@ -40,21 +40,21 @@ class UserService extends DatabaseConnection {
       if (!user?.first_hunt) {
         Object.assign(updateData, { first_hunt: currentDate });
       }
-      if(name && !user?.user_name){
-        Object.assign(updateData, { user_name: name });
+      if (!user?.user_name) {
+        Object.assign(updateData, { user_name: name || 'unknown_name' });
       }
       await userModel.updateOne({ user_id: userId }, updateData);
     } catch (err) {
-      console.error("Error updating hunting info:", err);
+      console.error('Error updating hunting info:', err);
     }
   }
 
   endHunting(userId: number): void {
     try {
-      const currentDate = new Date().toISOString().split("T")[0];
+      const currentDate = new Date().toISOString().split('T')[0];
       userModel.updateOne({ user_id: userId }, { last_hunt: currentDate });
     } catch (err) {
-      console.error("Error updating hunting info:", err);
+      console.error('Error updating hunting info:', err);
     }
   }
 
@@ -63,7 +63,7 @@ class UserService extends DatabaseConnection {
       const users = await userModel.find().lean<IUser[]>();
       return users;
     } catch (error) {
-      console.error("Error retrieving users:", error);
+      console.error('Error retrieving users:', error);
       return [];
     }
   };
