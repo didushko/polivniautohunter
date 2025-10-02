@@ -1,13 +1,13 @@
-import axios from "axios";
-import * as cheerio from "cheerio";
-import { ConfigService } from "../config/config.service";
-import { Scenes, Telegraf } from "telegraf";
+import axios from 'axios';
+import * as cheerio from 'cheerio';
+import { ConfigService } from '../config/config.service';
+import { Scenes, Telegraf } from 'telegraf';
 import {
   getDataFromArticle as getAutoCardFromArticle,
   getDateNow,
-} from "../utils";
-import trackingService from "./tracking-service";
-import { exampleHhtml } from "../example";
+} from '../utils';
+import trackingService from './tracking-service';
+import { exampleHhtml } from '../example';
 
 export interface AutoCard {
   id: string;
@@ -21,13 +21,13 @@ export interface AutoCard {
 const ARTICLE_CLASS = '<article class="classified';
 const ARTICLE_WITH_ADD =
   'article.usedCarFeatured, article[class~="usedCarFeatured"]';
-const ARTICLE_ORDINARY = "article.classified:not(.usedCarFeatured)";
+const ARTICLE_ORDINARY = 'article.classified:not(.usedCarFeatured)';
 const NEXT_PAGE = '<a title="Sledeća stranica" class="js-pagination-next"';
 
 function getDatesFromPage(rawHtml: string) {
   const res = {
-    add: "",
-    ord: "",
+    add: '',
+    ord: '',
   };
   const html = cheerio.load(rawHtml);
   const firstArticleAdd = html(ARTICLE_WITH_ADD).first();
@@ -35,17 +35,17 @@ function getDatesFromPage(rawHtml: string) {
   const firstArticleOrdinary = html(ARTICLE_ORDINARY).first();
 
   if (firstArticleAdd.length > 0) {
-    res.add = firstArticleAdd.attr("data-renewdate") || "";
+    res.add = firstArticleAdd.attr('data-renewdate') || '';
     console.log(
-      "first finded add",
-      firstArticleAdd.attr("data-renewdate") || ""
+      'first finded add',
+      firstArticleAdd.attr('data-renewdate') || ''
     );
   }
   if (firstArticleOrdinary.length > 0) {
-    res.ord = firstArticleOrdinary.attr("data-renewdate") || "";
+    res.ord = firstArticleOrdinary.attr('data-renewdate') || '';
     console.log(
-      "first finded ord",
-      firstArticleOrdinary.attr("data-renewdate") || ""
+      'first finded ord',
+      firstArticleOrdinary.attr('data-renewdate') || ''
     );
   }
   return res;
@@ -68,17 +68,17 @@ function getNewFromPage(
   const html = cheerio.load(rawHtml);
   html(ARTICLE_WITH_ADD)
     .filter(function () {
-      const renewDateStr = html(this).attr("data-renewdate");
+      const renewDateStr = html(this).attr('data-renewdate');
       const renewDate = renewDateStr ? Date.parse(renewDateStr) : 0;
       return renewDate > last_date_with_add;
     })
     .each(function (i) {
-      const renewDateStr = html(this).attr("data-renewdate");
+      const renewDateStr = html(this).attr('data-renewdate');
       console.log(
         i,
-        "find with ad",
+        'find with ad',
         renewDateStr,
-        Date.parse(renewDateStr || "0"),
+        Date.parse(renewDateStr || '0'),
         last_date_with_add
       );
       const article = html(this);
@@ -87,7 +87,7 @@ function getNewFromPage(
 
   const ordinary = html(ARTICLE_ORDINARY);
   const ArticlesOrdinary = ordinary.filter(function () {
-    const renewDateStr = html(this).attr("data-renewdate");
+    const renewDateStr = html(this).attr('data-renewdate');
     const renewDate = renewDateStr ? Date.parse(renewDateStr) : 0;
     return renewDate > last_date;
   });
@@ -102,16 +102,16 @@ function getNewFromPage(
 export async function getDatesByUrl(url: string) {
   try {
     const parsedUrl = new URL(url);
-    parsedUrl.searchParams.set("sort", "renewDate_desc");
-    parsedUrl.searchParams.set("page", "1");
+    parsedUrl.searchParams.set('sort', 'renewDate_desc');
+    parsedUrl.searchParams.set('page', '1');
     const dates = {
-      add: "",
-      ord: "",
+      add: '',
+      ord: '',
     };
     let page = 1;
     let finish = false;
     do {
-      parsedUrl.searchParams.set("page", page.toString());
+      parsedUrl.searchParams.set('page', page.toString());
       const res = await axios.get(parsedUrl.toString());
       if (res.status === 200 && res.data.toString().includes(ARTICLE_CLASS)) {
         const finedDates = getDatesFromPage(res.data);
@@ -148,18 +148,18 @@ export async function getNewCard(
   let finish = false;
   try {
     const parsedUrl = new URL(url);
-    parsedUrl.searchParams.set("sort", "renewDate_desc");
-    parsedUrl.searchParams.set("page", "1");
+    parsedUrl.searchParams.set('sort', 'renewDate_desc');
+    parsedUrl.searchParams.set('page', '1');
     let page = 1;
     do {
-      parsedUrl.searchParams.set("page", page.toString());
+      parsedUrl.searchParams.set('page', page.toString());
       const res = await axios.get(parsedUrl.toString());
       if (res.status === 200 && res.data.toString().includes(ARTICLE_CLASS)) {
         const newData = getNewFromPage(res.data, last_date_with_add, last_date);
         newWithAdd.push(...newData.add);
         newOrdinary.push(...newData.ord);
         finish = newData.ord.length > 0;
-        if (res.data.toString().includes("NEXT_PAGE")) {
+        if (res.data.toString().includes('NEXT_PAGE')) {
           page++;
         } else {
           finish = true;
@@ -184,7 +184,7 @@ export async function sendUpdates(
 ) {
   setInterval(
     () => processAllTrackings(bot),
-    Number.parseInt(configService.get("INTERVAL")) * 60 * 1000
+    Number.parseInt(configService.get('INTERVAL')) * 60 * 1000
   );
 }
 
@@ -200,63 +200,67 @@ export const processAllTrackings = async (
     last_date_with_add: number;
     last_date: number;
   }): Promise<void> => {
-    const newItems = await getNewCard(
-      tracking.url,
-      tracking.last_date_with_add,
-      tracking.last_date
-    );
-    if (!newItems) {
-      return;
-    }
-
-    await trackingService.updateTrackingDates(
-      tracking.user_id,
-      tracking.name,
-      Math.max(
-        ...newItems.newWithAdd.map((item) => item.date),
-        tracking.last_date_with_add
-      ),
-      Math.max(
-        ...newItems.newOrdinary.map((item) => item.date),
+    try {
+      const newItems = await getNewCard(
+        tracking.url,
+        tracking.last_date_with_add,
         tracking.last_date
-      )
-    );
-    newItems?.newOrdinary
-      .sort((a, b) => a.date - b.date)
-      .forEach(async (item) =>
-        sendMessageWithNewItem(
-          bot,
-          tracking.user_id,
-          tracking.name,
-          tracking.url,
-          item.tags,
-          item.titles,
-          item.img,
-          item.link,
-          "🌟 Regular"
+      );
+      if (!newItems) {
+        return;
+      }
+
+      await trackingService.updateTrackingDates(
+        tracking.user_id,
+        tracking.name,
+        Math.max(
+          ...newItems.newWithAdd.map((item) => item.date),
+          tracking.last_date_with_add
+        ),
+        Math.max(
+          ...newItems.newOrdinary.map((item) => item.date),
+          tracking.last_date
         )
       );
-    newItems?.newWithAdd
-      .sort((a, b) => a.date - b.date)
-      .forEach(async (item) => {
-        sendMessageWithNewItem(
-          bot,
-          tracking.user_id,
-          tracking.name,
-          tracking.url,
-          item.tags,
-          item.titles,
-          item.img,
-          item.link,
-          "📢 Sponsored"
+      newItems?.newOrdinary
+        .sort((a, b) => a.date - b.date)
+        .forEach(async (item) =>
+          sendMessageWithNewItem(
+            bot,
+            tracking.user_id,
+            tracking.name,
+            tracking.url,
+            item.tags,
+            item.titles,
+            item.img,
+            item.link,
+            '🌟 Regular'
+          )
         );
-      });
+      newItems?.newWithAdd
+        .sort((a, b) => a.date - b.date)
+        .forEach(async (item) => {
+          sendMessageWithNewItem(
+            bot,
+            tracking.user_id,
+            tracking.name,
+            tracking.url,
+            item.tags,
+            item.titles,
+            item.img,
+            item.link,
+            '📢 Sponsored'
+          );
+        });
 
-    console.log(
-      `${getDateNow()}---send ${
-        newItems.newWithAdd.length + newItems.newOrdinary.length
-      } to user ${tracking.user_id} with hunting name ${tracking.name}`
-    );
+      console.log(
+        `${getDateNow()}---send ${
+          newItems.newWithAdd.length + newItems.newOrdinary.length
+        } to user ${tracking.user_id} with hunting name ${tracking.name}`
+      );
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   while (true) {
@@ -291,24 +295,23 @@ async function sendMessageWithNewItem(
 ) {
   try {
     const messageText = `Here’s a new car in your 🎯<a href='${huntUrl}'><b>${huntName}</b></a> hunt\nType: ${type}\n\n${titles}\n\n${tags
-      .map((el) => "#" + el.replace(/\s+/g, "_"))
-      .join(" ")}`;
+      .map((el) => '#' + el.replace(/\s+/g, '_'))
+      .join(' ')}`;
 
-    const buttonText = "View on the website";
-    const buttonUrl = "https://www.polovniautomobili.com" + link;
+    const buttonText = 'View on the website';
+    const buttonUrl = 'https://www.polovniautomobili.com' + link;
 
     const options: Intl.DateTimeFormatOptions = {
-      timeZone: "Europe/Belgrade",
-      hour: "numeric",
+      timeZone: 'Europe/Belgrade',
+      hour: 'numeric',
       hour12: false,
     };
-    const formatter = new Intl.DateTimeFormat("en-US", options);
+    const formatter = new Intl.DateTimeFormat('en-US', options);
     const currentHour = parseInt(formatter.format(new Date()), 10);
     const disableNotification = currentHour <= 10 || currentHour >= 22;
-
     await bot.telegram.sendPhoto(user_id, img, {
-      caption: messageText + (disableNotification ? "\n 🔕 10pm — 10am" : ""),
-      parse_mode: "HTML",
+      caption: messageText + (disableNotification ? '\n 🔕 10pm — 10am' : ''),
+      parse_mode: 'HTML',
       disable_notification: disableNotification,
       reply_markup: {
         inline_keyboard: [[{ text: buttonText, url: buttonUrl }]],
@@ -322,10 +325,10 @@ async function sendMessageWithNewItem(
 export async function sendTestMessage(bot: Telegraf<Scenes.WizardContext>) {
   const newItem = getNewFromPage(exampleHhtml, 0, 0);
   const { titles, img, link, tags } = newItem.ord[0]!;
-  const type = "🌟 Regular";
-  const name = "TEST";
+  const type = '🌟 Regular';
+  const name = 'TEST';
   const user_id = process.env.ADMIN_ID;
-  const url = "https://www.polovniautomobili.com/auto-oglasi/";
+  const url = 'https://www.polovniautomobili.com/auto-oglasi/';
   if (user_id) {
     sendMessageWithNewItem(
       bot,
