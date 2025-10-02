@@ -1,6 +1,5 @@
 import * as http from 'http';
 import { processAllTrackings, sendTestMessage } from './services/polav-service';
-import axios from 'axios';
 import { Bot } from './app';
 
 export function startServer(bot: Bot) {
@@ -45,25 +44,4 @@ export function startServer(bot: Bot) {
   server.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
   });
-
-  if (process.env.CHEAP) selfReq();
-}
-
-function selfReq() {
-  const p1 = 'https://poliv';
-  const p2 = 'niautohunter.onren';
-  const p3 = 'der.com';
-  const url = p1 + p2 + p3;
-
-  setInterval(async () => {
-    await new Promise((resolve) => {
-      setTimeout(resolve, (Math.floor(Math.random() * 3) + 1) * 60 * 1000);
-    });
-    axios.get(url + `/send/`).catch((error) => {
-      console.error(
-        `selfReq Error -- ${new Date().toISOString()}:`,
-        error.message
-      );
-    });
-  }, 10 * 60 * 1000);
 }
