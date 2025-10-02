@@ -37,17 +37,9 @@ function getDatesFromPage(rawHtml: string) {
 
   if (firstArticleAdd.length > 0) {
     res.add = firstArticleAdd.attr('data-renewdate') || '';
-    console.log(
-      'first finded add',
-      firstArticleAdd.attr('data-renewdate') || ''
-    );
   }
   if (firstArticleOrdinary.length > 0) {
     res.ord = firstArticleOrdinary.attr('data-renewdate') || '';
-    console.log(
-      'first finded ord',
-      firstArticleOrdinary.attr('data-renewdate') || ''
-    );
   }
   return res;
 }
@@ -73,15 +65,7 @@ function getNewFromPage(
       const renewDate = renewDateStr ? Date.parse(renewDateStr) : 0;
       return renewDate > last_date_with_add;
     })
-    .each(function (i) {
-      const renewDateStr = html(this).attr('data-renewdate');
-      console.log(
-        i,
-        'find with ad',
-        renewDateStr,
-        Date.parse(renewDateStr || '0'),
-        last_date_with_add
-      );
+    .each(function () {
       const article = html(this);
       res.add.push(getAutoCardFromArticle(html, article));
     });
