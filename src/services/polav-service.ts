@@ -8,6 +8,7 @@ import {
 } from '../utils';
 import trackingService from './tracking-service';
 import { exampleHhtml } from '../example';
+import userService from './user-service';
 
 export interface AutoCard {
   id: string;
@@ -317,8 +318,14 @@ async function sendMessageWithNewItem(
         inline_keyboard: [[{ text: buttonText, url: buttonUrl }]],
       },
     });
-  } catch (e) {
-    console.log(e);
+  } catch (e: any) {
+    if (e?.description?.includes('bot was blocked by the user')) {
+      console.log(`🚫 User ${user_id} заблокував бота, видаляємо`);
+      trackingService.deleteTrackingById(Number.parseInt(user_id));
+      userService.deleteUser(Number.parseInt(user_id));
+    } else {
+      console.error('Send error:', e);
+    }
   }
 }
 

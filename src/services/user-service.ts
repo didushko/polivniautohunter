@@ -67,6 +67,21 @@ class UserService extends DatabaseConnection {
       return [];
     }
   };
+  deleteUser = async (userId: number): Promise<boolean> => {
+    try {
+      const result = await userModel.deleteOne({ user_id: userId });
+      if (result.deletedCount && result.deletedCount > 0) {
+        console.log(`✅ User ${userId} видалений`);
+        return true;
+      } else {
+        console.warn(`⚠️ User ${userId} не знайдений`);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      return false;
+    }
+  };
 }
 
 const userService = new UserService();

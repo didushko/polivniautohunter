@@ -1,18 +1,18 @@
-import { Scenes, session, Telegraf } from "telegraf";
-import { IConfigService } from "./config/config.interface";
-import { ConfigService } from "./config/config.service";
-import { Command } from "./commands/command.class";
-import { CommonCommand } from "./commands/common.command";
-import { sendUpdates } from "./services/polav-service";
+import { Scenes, session, Telegraf } from 'telegraf';
+import { IConfigService } from './config/config.interface';
+import { ConfigService } from './config/config.service';
+import { Command } from './commands/command.class';
+import { CommonCommand } from './commands/common.command';
+import { sendUpdates } from './services/polav-service';
 
-import { AdminCommand } from "./commands/admin.command";
-import { ServiceMiddleware } from "./commands/service.middlware";
-import { addHuntingScene } from "./scenes/addHunting.scene";
-import { HuntCommand } from "./commands/hunt.command";
-import { adminShowUsersScene } from "./scenes/admin/showUsers.scene";
-import { chatWithAdminScene } from "./scenes/chatWithAdmin.scene";
-import { startServer } from "./server";
-import { adminSendMessageToAllScene } from "./scenes/admin/sendMessageToAll.scene";
+import { AdminCommand } from './commands/admin.command';
+import { ServiceMiddleware } from './commands/service.middlware';
+import { addHuntingScene } from './scenes/addHunting.scene';
+import { HuntCommand } from './commands/hunt.command';
+import { adminShowUsersScene } from './scenes/admin/showUsers.scene';
+import { chatWithAdminScene } from './scenes/chatWithAdmin.scene';
+import { startServer } from './server';
+import { adminSendMessageToAllScene } from './scenes/admin/sendMessageToAll.scene';
 
 export class Bot {
   bot: Telegraf<Scenes.WizardContext>;
@@ -21,7 +21,7 @@ export class Bot {
     [];
   constructor(private readonly configService: IConfigService) {
     this.bot = new Telegraf<Scenes.WizardContext>(
-      this.configService.get("TOKEN")
+      this.configService.get('TOKEN')
     );
   }
   init() {
@@ -51,6 +51,13 @@ const configService = new ConfigService();
 
 const bot = new Bot(configService);
 
+process.on('unhandledRejection', (reason) => {
+  console.error('❌ Unhandled Rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err);
+});
 bot.init();
 
 if (!process.env.TEST) sendUpdates(configService, bot.bot);
